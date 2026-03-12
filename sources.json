@@ -1,72 +1,39 @@
 {
-    "nbcnews.com": {
-        "name": "NBC News",
-        "country": "United States",
-        "url": "https://nbcnews.com",
-        "aliases": []
-    },
-    "npr.org": {
-        "name": "NPR",
-        "country": "United States",
-        "url": "https://npr.org",
-        "aliases": []
-    },
-    "thedrive.com": {
-        "name": "The War Zone",
-        "country": "United States",
-        "url": "https://thedrive.com/the-war-zone",
+    "aa.com.tr": {
+        "name": "Anadolu Agency",
+        "country": "Turkey",
+        "url": "https://aa.com.tr",
         "aliases": [
-            "War Zone"
+            "Anadolu",
+            "Anadolu TR"
         ]
     },
-    "radiofarda.com": {
-        "name": "Radio Farda",
-        "country": "United States",
-        "url": "https://radiofarda.com",
+    "afp.com": {
+        "name": "AFP",
+        "country": "France",
+        "url": "https://afp.com",
+        "aliases": []
+    },
+    "alarabiya.net": {
+        "name": "Al Arabiya",
+        "country": "Saudi Arabia",
+        "url": "https://alarabiya.net",
+        "aliases": []
+    },
+    "aljazeera.com": {
+        "name": "Al Jazeera",
+        "country": "Qatar",
+        "url": "https://aljazeera.com",
         "aliases": [
-            "Radio Free Europe"
+            "الجزيرة",
+            "AJ"
         ]
     },
-    "pbs.org": {
-        "name": "PBS News",
-        "country": "United States",
-        "url": "https://pbs.org/newshour",
+    "ansa.it": {
+        "name": "ANSA",
+        "country": "Italy",
+        "url": "https://ansa.it",
         "aliases": []
-    },
-    "cbsnews.com": {
-        "name": "CBS News",
-        "country": "United States",
-        "url": "https://cbsnews.com",
-        "aliases": [
-            "CBS"
-        ]
-    },
-    "cnn.com": {
-        "name": "CNN",
-        "country": "United States",
-        "url": "https://cnn.com",
-        "aliases": []
-    },
-    "newsweek.com": {
-        "name": "Newsweek",
-        "country": "United States",
-        "url": "https://newsweek.com",
-        "aliases": []
-    },
-    "washingtonpost.com": {
-        "name": "Washington Post",
-        "country": "United States",
-        "url": "https://washingtonpost.com",
-        "aliases": []
-    },
-    "nytimes.com": {
-        "name": "New York Times",
-        "country": "United States",
-        "url": "https://nytimes.com",
-        "aliases": [
-            "NY Times",
-            "NYT"
-        ]
     },
     "apnews.com": {
         "name": "AP",
@@ -74,36 +41,16 @@
         "url": "https://apnews.com",
         "aliases": []
     },
+    "arabnews.com": {
+        "name": "Arab News",
+        "country": "Saudi Arabia",
+        "url": "https://arabnews.com",
+        "aliases": []
+    },
     "axios.com": {
         "name": "Axios",
         "country": "United States",
         "url": "https://axios.com",
-        "aliases": []
-    },
-    "politico.com": {
-        "name": "Politico",
-        "country": "United States",
-        "url": "https://politico.com",
-        "aliases": []
-    },
-    "foxnews.com": {
-        "name": "Fox News",
-        "country": "United States",
-        "url": "https://foxnews.com",
-        "aliases": []
-    },
-    "meforum.org": {
-        "name": "Middle East Forum",
-        "country": "United States",
-        "url": "https://meforum.org",
-        "aliases": [
-            "MEF"
-        ]
-    },
-    "wikipedia.org": {
-        "name": "Wikipedia",
-        "country": "United States",
-        "url": "https://wikipedia.org",
         "aliases": []
     },
     "bbc.com": {
@@ -117,31 +64,68 @@
             "BBC Arabic",
             "بی‌بی‌سی فارسی",
             "بی‌بی‌سي فارسی",
-            "بي بي سي عربي"
+            "بي بي سي عربي",
+            "BBC Mundo",
+            "BBC Türkçe",
+            "BBC日本語",
+            "BBC Hindi"
         ]
     },
-    "iranintl.com": {
-        "name": "Iran International",
-        "country": "United Kingdom",
-        "url": "https://iranintl.com",
+    "cbsnews.com": {
+        "name": "CBS News",
+        "country": "United States",
+        "url": "https://cbsnews.com",
+        "aliases": [
+            "CBS",
+            "Airbus Pleiades Neo"
+        ]
+    },
+    "cgtn.com": {
+        "name": "CGTN",
+        "country": "China",
+        "url": "https://cgtn.com",
         "aliases": []
     },
-    "middleeasteye.net": {
-        "name": "Middle East Eye",
-        "country": "United Kingdom",
-        "url": "https://middleeasteye.net",
+    "cnn.com": {
+        "name": "CNN",
+        "country": "United States",
+        "url": "https://cnn.com",
         "aliases": []
     },
-    "reuters.com": {
-        "name": "Reuters",
-        "country": "United Kingdom",
-        "url": "https://reuters.com",
+    "dw.com": {
+        "name": "DW Deutsch",
+        "country": "UNKNOWN",
+        "url": "https://dw.com",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "es.euronews.com": {
+        "name": "Euronews ES",
+        "country": "UNKNOWN",
+        "url": "https://es.euronews.com",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "euronews.com": {
+        "name": "Euronews",
+        "country": "Belgium",
+        "url": "https://euronews.com",
+        "aliases": [
+            "یورونیوز فارسی",
+            "Iran State TV",
+            "IRCS"
+        ]
+    },
+    "farsnews.ir": {
+        "name": "Fars News",
+        "country": "Iran",
+        "url": "https://farsnews.ir",
         "aliases": []
     },
-    "theguardian.com": {
-        "name": "The Guardian",
-        "country": "United Kingdom",
-        "url": "https://theguardian.com",
+    "foxnews.com": {
+        "name": "Fox News",
+        "country": "United States",
+        "url": "https://foxnews.com",
         "aliases": []
     },
     "france24.com": {
@@ -151,41 +135,9 @@
         "aliases": [
             "France 24 FR",
             "France 24 Arabic",
-            "فرانس 24 عربي"
+            "فرانس 24 عربي",
+            "France 24 ES"
         ]
-    },
-    "afp.com": {
-        "name": "AFP",
-        "country": "France",
-        "url": "https://afp.com",
-        "aliases": []
-    },
-    "ncr-iran.org": {
-        "name": "NCRI",
-        "country": "France",
-        "url": "https://ncr-iran.org",
-        "aliases": []
-    },
-    "aljazeera.com": {
-        "name": "Al Jazeera",
-        "country": "Qatar",
-        "url": "https://aljazeera.com",
-        "aliases": [
-            "الجزيرة",
-            "AJ"
-        ]
-    },
-    "arabnews.com": {
-        "name": "Arab News",
-        "country": "Saudi Arabia",
-        "url": "https://arabnews.com",
-        "aliases": []
-    },
-    "alarabiya.net": {
-        "name": "Al Arabiya",
-        "country": "Saudi Arabia",
-        "url": "https://alarabiya.net",
-        "aliases": []
     },
     "gov.sa": {
         "name": "Saudi FM",
@@ -193,73 +145,12 @@
         "url": null,
         "aliases": []
     },
-    "skynewsarabia.com": {
-        "name": "Sky News Arabia",
-        "country": "United Arab Emirates",
-        "url": "https://skynewsarabia.com",
-        "aliases": [
-            "سكاي نيوز عربية"
-        ]
-    },
-    "mod.gov.ae": {
-        "name": "UAE Ministry of Defence",
-        "country": "United Arab Emirates",
-        "url": null,
-        "aliases": [
-            "UAE MoD",
-            "Dubai Media"
-        ]
-    },
-    "kuna.net.kw": {
-        "name": "KUNA",
-        "country": "Kuwait",
-        "url": "https://kuna.net.kw",
-        "aliases": []
-    },
-    "jpost.com": {
-        "name": "Jerusalem Post",
-        "country": "Israel",
-        "url": "https://jpost.com",
-        "aliases": []
-    },
-    "timesofisrael.com": {
-        "name": "Times of Israel",
-        "country": "Israel",
-        "url": "https://timesofisrael.com",
-        "aliases": []
-    },
-    "ynetnews.com": {
-        "name": "Ynet",
-        "country": "Israel",
-        "url": "https://ynetnews.com",
-        "aliases": [
-            "ynet",
-            "ידיעות אחרונות"
-        ]
-    },
-    "walla.co.il": {
-        "name": "Walla",
-        "country": "Israel",
-        "url": "https://walla.co.il",
-        "aliases": [
-            "וואלה"
-        ]
-    },
-    "maariv.co.il": {
-        "name": "Maariv",
-        "country": "Israel",
-        "url": "https://maariv.co.il",
-        "aliases": [
-            "מעריב"
-        ]
-    },
-    "israelhayom.com": {
-        "name": "Israel Hayom",
-        "country": "Israel",
-        "url": "https://israelhayom.com",
-        "aliases": [
-            "ישראל היום"
-        ]
+    "gr.euronews.com": {
+        "name": "Euronews GR",
+        "country": "UNKNOWN",
+        "url": "https://gr.euronews.com",
+        "aliases": [],
+        "_needsReview": true
     },
     "haaretz.com": {
         "name": "Haaretz",
@@ -273,76 +164,23 @@
         "url": "https://i24news.tv",
         "aliases": []
     },
-    "mako.co.il": {
-        "name": "Channel 12",
-        "country": "Israel",
-        "url": "https://mako.co.il",
-        "aliases": [
-            "Channel 9"
-        ]
-    },
     "idf.il": {
         "name": "IDF",
         "country": "Israel",
         "url": "https://idf.il",
         "aliases": []
     },
-    "tass.com": {
-        "name": "TASS",
-        "country": "Russia",
-        "url": "https://tass.com",
-        "aliases": []
+    "in.gr": {
+        "name": "in.gr",
+        "country": "UNKNOWN",
+        "url": "https://in.gr",
+        "aliases": [],
+        "_needsReview": true
     },
-    "rt.com": {
-        "name": "RT",
-        "country": "Russia",
-        "url": "https://rt.com",
-        "aliases": [
-            "RT عربي"
-        ]
-    },
-    "pravda.ru": {
-        "name": "Pravda",
-        "country": "Russia",
-        "url": "https://pravda.ru",
-        "aliases": []
-    },
-    "sputniknews.com": {
-        "name": "Sputnik",
-        "country": "Russia",
-        "url": "https://sputniknews.com",
-        "aliases": []
-    },
-    "irna.ir": {
-        "name": "IRNA",
-        "country": "Iran",
-        "url": "https://irna.ir",
-        "aliases": []
-    },
-    "presstv.ir": {
-        "name": "Press TV",
-        "country": "Iran",
-        "url": "https://presstv.ir",
-        "aliases": []
-    },
-    "tasnimnews.com": {
-        "name": "Tasnim News",
-        "country": "Iran",
-        "url": "https://tasnimnews.com",
-        "aliases": [
-            "Tasnim"
-        ]
-    },
-    "mehrnews.com": {
-        "name": "Mehr News",
-        "country": "Iran",
-        "url": "https://mehrnews.com",
-        "aliases": []
-    },
-    "farsnews.ir": {
-        "name": "Fars News",
-        "country": "Iran",
-        "url": "https://farsnews.ir",
+    "iranintl.com": {
+        "name": "Iran International",
+        "country": "United Kingdom",
+        "url": "https://iranintl.com",
         "aliases": []
     },
     "irib.ir": {
@@ -351,29 +189,83 @@
         "url": "https://irib.ir",
         "aliases": []
     },
-    "ansa.it": {
-        "name": "ANSA",
-        "country": "Italy",
-        "url": "https://ansa.it",
+    "irna.ir": {
+        "name": "IRNA",
+        "country": "Iran",
+        "url": "https://irna.ir",
         "aliases": []
     },
-    "trthaber.com": {
-        "name": "TRT Haber",
-        "country": "Turkey",
-        "url": "https://trthaber.com",
+    "israelhayom.com": {
+        "name": "Israel Hayom",
+        "country": "Israel",
+        "url": "https://israelhayom.com",
+        "aliases": [
+            "ישראל היום"
+        ]
+    },
+    "it.euronews.com": {
+        "name": "Euronews IT",
+        "country": "UNKNOWN",
+        "url": "https://it.euronews.com",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "jpost.com": {
+        "name": "Jerusalem Post",
+        "country": "Israel",
+        "url": "https://jpost.com",
         "aliases": []
     },
-    "aa.com.tr": {
-        "name": "Anadolu Agency",
-        "country": "Turkey",
-        "url": "https://aa.com.tr",
+    "kuna.net.kw": {
+        "name": "KUNA",
+        "country": "Kuwait",
+        "url": "https://kuna.net.kw",
         "aliases": []
     },
-    "cgtn.com": {
-        "name": "CGTN",
-        "country": "China",
-        "url": "https://cgtn.com",
+    "maariv.co.il": {
+        "name": "Maariv",
+        "country": "Israel",
+        "url": "https://maariv.co.il",
+        "aliases": [
+            "מעריב"
+        ]
+    },
+    "mako.co.il": {
+        "name": "Channel 12",
+        "country": "Israel",
+        "url": "https://mako.co.il",
+        "aliases": [
+            "Channel 9"
+        ]
+    },
+    "meforum.org": {
+        "name": "Middle East Forum",
+        "country": "United States",
+        "url": "https://meforum.org",
+        "aliases": [
+            "MEF"
+        ]
+    },
+    "mehrnews.com": {
+        "name": "Mehr News",
+        "country": "Iran",
+        "url": "https://mehrnews.com",
         "aliases": []
+    },
+    "middleeasteye.net": {
+        "name": "Middle East Eye",
+        "country": "United Kingdom",
+        "url": "https://middleeasteye.net",
+        "aliases": []
+    },
+    "mod.gov.ae": {
+        "name": "UAE Ministry of Defence",
+        "country": "United Arab Emirates",
+        "url": null,
+        "aliases": [
+            "UAE MoD",
+            "Dubai Media"
+        ]
     },
     "nationalpost.com": {
         "name": "National Post",
@@ -383,40 +275,37 @@
             "nationalpost.com"
         ]
     },
-    "radiozamaneh.com": {
-        "name": "Radio Zamaneh",
-        "country": "Netherlands",
-        "url": "https://radiozamaneh.com",
+    "nbcnews.com": {
+        "name": "NBC News",
+        "country": "United States",
+        "url": "https://nbcnews.com",
         "aliases": []
     },
-    "euronews.com": {
-        "name": "Euronews",
-        "country": "Belgium",
-        "url": "https://euronews.com",
-        "aliases": [
-            "یورونیوز فارسی"
-        ]
-    },
-    "republicworld.com": {
-        "name": "Republic World",
-        "country": "India",
-        "url": "https://republicworld.com",
+    "ncr-iran.org": {
+        "name": "NCRI",
+        "country": "France",
+        "url": "https://ncr-iran.org",
         "aliases": []
     },
-    "osint/osintwarfare": {
-        "name": "OSINTWarfare",
-        "country": "OSINT",
-        "url": "https://t.me/OSINTWarfare",
-        "aliases": [
-            "Telegram/OSINTWarfare"
-        ]
+    "newsweek.com": {
+        "name": "Newsweek",
+        "country": "United States",
+        "url": "https://newsweek.com",
+        "aliases": []
     },
-    "osint/manniefabian": {
-        "name": "manniefabian",
-        "country": "OSINT",
-        "url": "https://t.me/manniefabian",
+    "npr.org": {
+        "name": "NPR",
+        "country": "United States",
+        "url": "https://npr.org",
+        "aliases": []
+    },
+    "nytimes.com": {
+        "name": "New York Times",
+        "country": "United States",
+        "url": "https://nytimes.com",
         "aliases": [
-            "Telegram/manniefabian"
+            "NY Times",
+            "NYT"
         ]
     },
     "osint/cig": {
@@ -426,6 +315,43 @@
         "aliases": [
             "Telegram/CIG_telegram",
             "CIG"
+        ]
+    },
+    "osint/fotros": {
+        "name": "Fotros",
+        "country": "OSINT",
+        "url": null,
+        "aliases": []
+    },
+    "osint/manniefabian": {
+        "name": "manniefabian",
+        "country": "OSINT",
+        "url": "https://t.me/manniefabian",
+        "aliases": [
+            "Telegram/manniefabian"
+        ]
+    },
+    "osint/menchosint": {
+        "name": "MenchOsint",
+        "country": "OSINT",
+        "url": null,
+        "aliases": []
+    },
+    "osint/mespectator": {
+        "name": "Middle East Spectator",
+        "country": "OSINT",
+        "url": null,
+        "aliases": [
+            "ME Spectator",
+            "Telegram OSINT"
+        ]
+    },
+    "osint/osintwarfare": {
+        "name": "OSINTWarfare",
+        "country": "OSINT",
+        "url": "https://t.me/OSINTWarfare",
+        "aliases": [
+            "Telegram/OSINTWarfare"
         ]
     },
     "osint/ournewsfeedtoday": {
@@ -444,27 +370,6 @@
             "Telegram/ourwarstoday"
         ]
     },
-    "osint/mespectator": {
-        "name": "Middle East Spectator",
-        "country": "OSINT",
-        "url": null,
-        "aliases": [
-            "ME Spectator",
-            "Telegram OSINT"
-        ]
-    },
-    "osint/menchosint": {
-        "name": "MenchOsint",
-        "country": "OSINT",
-        "url": null,
-        "aliases": []
-    },
-    "osint/fotros": {
-        "name": "Fotros",
-        "country": "OSINT",
-        "url": null,
-        "aliases": []
-    },
     "osint/tripi": {
         "name": "Tripi",
         "country": "OSINT",
@@ -476,5 +381,262 @@
         "country": "OSINT",
         "url": null,
         "aliases": []
+    },
+    "pbs.org": {
+        "name": "PBS News",
+        "country": "United States",
+        "url": "https://pbs.org/newshour",
+        "aliases": [
+            "NBC"
+        ]
+    },
+    "politico.com": {
+        "name": "Politico",
+        "country": "United States",
+        "url": "https://politico.com",
+        "aliases": []
+    },
+    "pravda.ru": {
+        "name": "Pravda",
+        "country": "Russia",
+        "url": "https://pravda.ru",
+        "aliases": []
+    },
+    "presstv.ir": {
+        "name": "Press TV",
+        "country": "Iran",
+        "url": "https://presstv.ir",
+        "aliases": []
+    },
+    "radiofarda.com": {
+        "name": "Radio Farda",
+        "country": "United States",
+        "url": "https://radiofarda.com",
+        "aliases": [
+            "Radio Free Europe"
+        ]
+    },
+    "radiozamaneh.com": {
+        "name": "Radio Zamaneh",
+        "country": "Netherlands",
+        "url": "https://radiozamaneh.com",
+        "aliases": []
+    },
+    "rainews.it": {
+        "name": "RaiNews",
+        "country": "UNKNOWN",
+        "url": "https://rainews.it",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "republicworld.com": {
+        "name": "Republic World",
+        "country": "India",
+        "url": "https://republicworld.com",
+        "aliases": []
+    },
+    "reuters.com": {
+        "name": "Reuters",
+        "country": "United Kingdom",
+        "url": "https://reuters.com",
+        "aliases": []
+    },
+    "rt.com": {
+        "name": "RT",
+        "country": "Russia",
+        "url": "https://rt.com",
+        "aliases": [
+            "RT عربي"
+        ]
+    },
+    "sana.sy": {
+        "name": "SANA",
+        "country": "UNKNOWN",
+        "url": "https://sana.sy",
+        "aliases": [
+            "CENTCOM"
+        ],
+        "_needsReview": true
+    },
+    "skynewsarabia.com": {
+        "name": "Sky News Arabia",
+        "country": "United Arab Emirates",
+        "url": "https://skynewsarabia.com",
+        "aliases": [
+            "سكاي نيوز عربية"
+        ]
+    },
+    "spiegel.de": {
+        "name": "Spiegel",
+        "country": "UNKNOWN",
+        "url": "https://spiegel.de",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "sputniknews.com": {
+        "name": "Sputnik",
+        "country": "Russia",
+        "url": "https://sputniknews.com",
+        "aliases": []
+    },
+    "tagesschau.de": {
+        "name": "Tagesschau",
+        "country": "UNKNOWN",
+        "url": "https://tagesschau.de",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "tasnimnews.com": {
+        "name": "Tasnim News",
+        "country": "Iran",
+        "url": "https://tasnimnews.com",
+        "aliases": [
+            "Tasnim"
+        ]
+    },
+    "tass.com": {
+        "name": "TASS",
+        "country": "Russia",
+        "url": "https://tass.com",
+        "aliases": []
+    },
+    "thedrive.com": {
+        "name": "The War Zone",
+        "country": "United States",
+        "url": "https://thedrive.com/the-war-zone",
+        "aliases": [
+            "War Zone"
+        ]
+    },
+    "theguardian.com": {
+        "name": "The Guardian",
+        "country": "United Kingdom",
+        "url": "https://theguardian.com",
+        "aliases": []
+    },
+    "timesofisrael.com": {
+        "name": "Times of Israel",
+        "country": "Israel",
+        "url": "https://timesofisrael.com",
+        "aliases": []
+    },
+    "trthaber.com": {
+        "name": "TRT Haber",
+        "country": "Turkey",
+        "url": "https://trthaber.com",
+        "aliases": []
+    },
+    "unknown/cig-telegram": {
+        "name": "CIG_telegram",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/cnbc": {
+        "name": "CNBC",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/iranian-media": {
+        "name": "Iranian media",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/mee": {
+        "name": "MEE",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/ndtv-world": {
+        "name": "NDTV World",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/ournewsfeedtoday": {
+        "name": "ournewsfeedtoday",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/ourwarstoday": {
+        "name": "ourwarstoday",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/pbs": {
+        "name": "PBS",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/pravda-osint": {
+        "name": "Pravda OSINT",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/telegram": {
+        "name": "Telegram",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "unknown/us-embassy-bahrain": {
+        "name": "US Embassy Bahrain",
+        "country": "UNKNOWN",
+        "url": null,
+        "aliases": [],
+        "_needsReview": true
+    },
+    "walla.co.il": {
+        "name": "Walla",
+        "country": "Israel",
+        "url": "https://walla.co.il",
+        "aliases": [
+            "וואלה"
+        ]
+    },
+    "washingtonpost.com": {
+        "name": "Washington Post",
+        "country": "United States",
+        "url": "https://washingtonpost.com",
+        "aliases": []
+    },
+    "wikipedia.org": {
+        "name": "Wikipedia",
+        "country": "United States",
+        "url": "https://wikipedia.org",
+        "aliases": []
+    },
+    "www3.nhk.or.jp": {
+        "name": "NHK",
+        "country": "UNKNOWN",
+        "url": "https://www3.nhk.or.jp",
+        "aliases": [],
+        "_needsReview": true
+    },
+    "ynetnews.com": {
+        "name": "Ynet",
+        "country": "Israel",
+        "url": "https://ynetnews.com",
+        "aliases": [
+            "ynet",
+            "ידיעות אחרונות"
+        ]
     }
 }
