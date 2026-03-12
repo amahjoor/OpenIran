@@ -1,0 +1,2 @@
+-- Intentionally empty.
+-- This file exists because supabase/config.toml enables seeding during db reset.
