@@ -5,16 +5,16 @@ const URLS = {
   NEWS: 'https://strike-proxy.osint-monitor.workers.dev/news'
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   try {
     // The Supabase runtime injects these environment variables automatically
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    
+
     if (!supabaseUrl || !supabaseKey) {
       throw new Error('Missing Supabase environment variables');
     }
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     console.log('Fetching upstream data...');
@@ -35,7 +35,7 @@ Deno.serve(async (req) => {
     // Process strikes
     for (const s of strikes) {
       if (!s.title) continue;
-      
+
       let ts = new Date().toISOString();
       if (s.date && s.date.length > 5) {
         try { ts = new Date(s.date).toISOString(); } catch (e) {
@@ -68,10 +68,10 @@ Deno.serve(async (req) => {
     // Process news
     for (const n of news) {
       if (!n.title) continue;
-      
+
       let ts = new Date().toISOString();
       if (n.date) {
-        try { ts = new Date(n.date).toISOString(); } catch (e) {}
+        try { ts = new Date(n.date).toISOString(); } catch (e) { }
       }
 
       eventsToInsert.push({
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     // Upsert the data in batches to avoid payload limits
     const BATCH_SIZE = 500;
     let insertedCount = 0;
-    
+
     for (let i = 0; i < eventsToInsert.length; i += BATCH_SIZE) {
       const batch = eventsToInsert.slice(i, i + BATCH_SIZE);
       const { error } = await supabase
@@ -108,17 +108,17 @@ Deno.serve(async (req) => {
 
     console.log('Successfully completed sync pipeline.');
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       fetched_strikes: strikes.length,
       fetched_news: news.length,
-      processed: insertedCount 
+      processed: insertedCount
     }), { headers: { "Content-Type": "application/json" } });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Edge Function Error:', error);
-    return new Response(JSON.stringify({ error: error.message }), { 
-      status: 500, 
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
       headers: { "Content-Type": "application/json" }
     });
   }
