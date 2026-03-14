@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages, Loader2 } from "lucide-react";
+import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
@@ -28,6 +28,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
     const [isTranslating, setIsTranslating] = React.useState(false);
     const [translatedTitle, setTranslatedTitle] = React.useState<string | null>(null);
     const [translatedSummary, setTranslatedSummary] = React.useState<string | null>(null);
+    const [translatedSource, setTranslatedSource] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         if (!globalTranslate || !isTranslatable || translatedTitle || isTranslating) return;
@@ -35,9 +36,10 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
         const fetchTranslation = async () => {
             setIsTranslating(true);
             try {
-                const [titleRes, summaryRes] = await Promise.all([
+                const [titleRes, summaryRes, sourceRes] = await Promise.all([
                     fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: event.title }) }),
-                    cleanSummary ? fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: cleanSummary }) }) : Promise.resolve(null)
+                    cleanSummary ? fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: cleanSummary }) }) : Promise.resolve(null),
+                    event.source ? fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: event.source }) }) : Promise.resolve(null)
                 ]);
 
                 const titleData = await titleRes.json();
@@ -47,6 +49,11 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                     const summaryData = await summaryRes.json();
                     if (summaryData.translated) setTranslatedSummary(summaryData.translated);
                 }
+
+                if (sourceRes) {
+                    const sourceData = await sourceRes.json();
+                    if (sourceData.translated) setTranslatedSource(sourceData.translated);
+                }
             } catch (err) {
                 console.error("Translation failed:", err);
             } finally {
@@ -54,14 +61,15 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
             }
         };
         fetchTranslation();
-    }, [globalTranslate, isTranslatable, translatedTitle, cleanSummary, event.title, isTranslating]);
+    }, [globalTranslate, isTranslatable, translatedTitle, cleanSummary, event.title, event.source, isTranslating]);
 
     const displayTitle = globalTranslate && translatedTitle ? translatedTitle : event.title;
     const displaySummary = globalTranslate && translatedSummary ? translatedSummary : cleanSummary;
+    const displaySource = globalTranslate && translatedSource ? translatedSource : event.source;
 
     return (
         <Card
-            className={`transition-colors cursor-pointer ${expanded ? "border-zinc-500 dark:border-zinc-600" : "hover:border-zinc-300 dark:hover:border-zinc-700"}`}
+            className={`cursor-pointer transition-colors ${expanded ? "border-border-strong" : "hover:border-border-strong"}`}
             onClick={() => setExpanded((e) => !e)}
         >
             <CardContent className="p-4 flex gap-4">
@@ -83,7 +91,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                     {/* Header row */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-primary">{event.source}</span>
+                            <span className="text-sm font-semibold text-primary">{displaySource}</span>
                             <span className="text-sm text-muted">·</span>
                             <span className="text-sm text-muted" title={format(timestamp, "PPpp")}>
                                 {formatDistanceToNow(timestamp, { addSuffix: true })}
@@ -154,7 +162,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                             {/* Tags */}
                             {Array.isArray(raw.tags) && raw.tags.length > 0 && (
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Tags</p>
+                                    <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">Tags</p>
                                     <div className="flex flex-wrap gap-1">
                                         {raw.tags.map((t: string) => (
                                             <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
@@ -169,7 +177,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                                     href={`https://maps.google.com/maps?q=${raw.lat},${raw.lng}&z=10`}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 text-xs text-blue-400 hover:underline"
+                                    className="inline-flex items-center gap-1 text-xs text-status-info hover:underline"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <MapPin className="h-3 w-3" />
@@ -185,7 +193,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                                         href={raw.url}
                                         target="_blank"
                                         rel="noreferrer noopener"
-                                        className="inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:underline"
+                                        className="inline-flex items-center gap-1 text-sm font-medium text-status-info hover:underline"
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Read source <ExternalLink className="h-3 w-3" />
@@ -291,12 +299,11 @@ export function Feed() {
 
     const visible = allEvents.slice(0, visibleCount);
     const hasMore = visibleCount < allEvents.length;
-
     if (loading && allEvents.length === 0) {
         return (
             <div className="flex flex-col gap-4">
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="animate-pulse h-32 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                    <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-2" />
                 ))}
             </div>
         );
@@ -304,24 +311,29 @@ export function Feed() {
 
     if (allEvents.length === 0) {
         return (
-            <div className="py-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
-                <p className="text-zinc-500">No events recorded yet.</p>
-                {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
+            <div className="rounded-xl border border-dashed border-border-default bg-surface-1 py-12 text-center">
+                <p className="text-muted">No events recorded yet.</p>
+                {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
             </div>
         );
     }
 
     return (
         <div className="flex flex-col gap-4">
-            <div className="flex justify-between items-center px-1">
-                <h2 className="text-xl font-bold tracking-tight text-primary">Live Feed</h2>
-                <button
-                    onClick={() => setGlobalTranslate((t) => !t)}
-                    className={`inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-full border transition-colors ${globalTranslate ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-surface-2 text-muted border-border-default hover:text-secondary'}`}
-                >
-                    <Languages className="h-4 w-4" />
-                    {globalTranslate ? "English Translation On" : "Translate non-English"}
-                </button>
+            <div className="sticky top-14 z-20 -mx-4 border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur md:mx-0 md:rounded-t-2xl md:border md:bg-surface-1/90">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <h2 className="text-xl font-bold tracking-tight text-primary">Live Feed</h2>
+                    </div>
+                    <button
+                        onClick={() => setGlobalTranslate((t) => !t)}
+                        aria-label={globalTranslate ? "Show original text" : "Show English translations"}
+                        title={globalTranslate ? "Show original text" : "Show English translations"}
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${globalTranslate ? "border-border-strong bg-surface-3 text-primary" : "border-border-default bg-surface-2 text-muted hover:border-border-strong hover:bg-surface-3 hover:text-primary"}`}
+                    >
+                        <Languages className="h-4 w-4" />
+                    </button>
+                </div>
             </div>
 
             {visible.map(({ event, raw }) => (
@@ -332,12 +344,12 @@ export function Feed() {
                 {hasMore ? (
                     <button
                         onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                        className="px-4 py-2 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors rounded-full text-sm font-medium"
+                        className="rounded-full border border-border-default bg-surface-1 px-4 py-2 text-sm font-medium text-secondary transition-colors hover:border-border-strong hover:bg-surface-2 hover:text-primary"
                     >
                         Load older events
                     </button>
                 ) : (
-                    <span className="text-sm text-zinc-500">End of events</span>
+                    <span className="text-sm text-muted">End of events</span>
                 )}
             </div>
         </div>

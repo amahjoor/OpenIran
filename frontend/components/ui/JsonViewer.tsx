@@ -19,7 +19,7 @@ export function JsonViewer({ data, label = "Raw JSON" }: JsonViewerProps) {
                 <span>{label}</span>
             </button>
             {open && (
-                <pre className="mt-2 p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-xs text-green-400 font-mono overflow-x-auto whitespace-pre-wrap break-all">
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-all rounded-lg border border-border-default bg-surface-2 p-3 font-mono text-xs text-secondary">
                     {JSON.stringify(data, null, 2)}
                 </pre>
             )}

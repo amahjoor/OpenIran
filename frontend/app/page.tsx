@@ -5,7 +5,7 @@ import { FlightWidget } from "@/components/dashboard/FlightWidget";
 
 export default function Home() {
   return (
-    <div className="relative min-h-screen bg-zinc-50 dark:bg-zinc-950">
+    <div className="relative min-h-screen bg-background">
       <Header />
 
       <main className="container mx-auto max-w-7xl px-4 py-8 md:px-6">
@@ -14,7 +14,7 @@ export default function Home() {
           {/* Main Feed Column (Left / Center) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
             <section className="space-y-4">
-              <h2 className="text-xl font-semibold tracking-tight">Live Updates</h2>
+              <h2 className="text-xl font-semibold tracking-tight text-primary">Live Updates</h2>
               <Feed />
             </section>
           </div>

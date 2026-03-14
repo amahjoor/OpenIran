@@ -3,37 +3,37 @@
 /* ─── Semantic Design Tokens ─────────────────────────────────────────────── */
 :root {
   /* Canvas */
-  --background: #09090b;
-  /* zinc-950 */
-  --foreground: #fafafa;
-  /* zinc-50  */
+  --background: #fafafa;
+  /* zinc-50 */
+  --foreground: #18181b;
+  /* zinc-900 */
 
   /* Text hierarchy */
-  --text-primary: #fafafa;
-  /* zinc-50  — headlines, bold labels */
-  --text-secondary: #a1a1aa;
-  /* zinc-400 — body copy, descriptions */
+  --text-primary: #18181b;
+  /* zinc-900 — headlines, bold labels */
+  --text-secondary: #52525b;
+  /* zinc-600 — body copy, descriptions */
   --text-muted: #71717a;
   /* zinc-500 — timestamps, labels, footers */
-  --text-faint: #3f3f46;
-  /* zinc-700 — disabled / hint */
+  --text-faint: #a1a1aa;
+  /* zinc-400 — disabled / hint */
 
   /* Surfaces */
-  --surface-0: #09090b;
-  /* zinc-950 — page background */
-  --surface-1: #18181b;
-  /* zinc-900 — cards */
-  --surface-2: #27272a;
-  /* zinc-800 — hover states, inner panels */
-  --surface-3: #3f3f46;
-  /* zinc-700 — active / selected */
+  --surface-0: #fafafa;
+  /* zinc-50 — page background */
+  --surface-1: #ffffff;
+  /* white — cards */
+  --surface-2: #f4f4f5;
+  /* zinc-100 — hover states, inner panels */
+  --surface-3: #e4e4e7;
+  /* zinc-200 — active / selected */
 
   /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: #27272a;
-  /* zinc-800 */
-  --border-strong: #52525b;
-  /* zinc-600 */
+  --border-subtle: rgba(24, 24, 27, 0.08);
+  --border-default: #e4e4e7;
+  /* zinc-200 */
+  --border-strong: #d4d4d8;
+  /* zinc-300 */
 
   /* Status */
   --status-ok: #22c55e;
@@ -88,12 +88,12 @@ body {
 }
 
 ::selection {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(24, 24, 27, 0.12);
   color: inherit;
 }
 
 .glass-panel {
-  background: rgba(24, 24, 27, 0.7);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--border-subtle);
