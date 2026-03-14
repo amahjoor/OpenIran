@@ -100,30 +100,35 @@ export function InternetWidget() {
 
     const bgpPoints = data.series?.bgp ?? [];
     const pingPoints = data.series?.ping ?? [];
-    const chartLabels = bgpPoints.map((p) => format(new Date(p.t * 1000), "MMM d"));
+    const timestamps = Array.from(new Set([...bgpPoints.map((point) => point.t), ...pingPoints.map((point) => point.t)])).sort((left, right) => left - right);
+    const bgpByTimestamp = new Map(bgpPoints.map((point) => [point.t, point.v]));
+    const pingByTimestamp = new Map(pingPoints.map((point) => [point.t, point.v]));
+    const chartLabels = timestamps.map((timestamp) => format(new Date(timestamp * 1000), "MMM d, ha"));
 
     const chartData = {
         labels: chartLabels,
         datasets: [
             {
                 label: "BGP",
-                data: bgpPoints.map((p) => p.v),
+                data: timestamps.map((timestamp) => bgpByTimestamp.get(timestamp) ?? null),
                 borderColor: "rgba(99,102,241,0.9)",
                 backgroundColor: "rgba(99,102,241,0.1)",
                 fill: true,
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 1.5,
+                spanGaps: true,
             },
             {
                 label: "Ping",
-                data: pingPoints.map((p) => p.v),
+                data: timestamps.map((timestamp) => pingByTimestamp.get(timestamp) ?? null),
                 borderColor: "rgba(20,184,166,0.9)",
                 backgroundColor: "rgba(20,184,166,0.05)",
                 fill: true,
                 tension: 0.3,
                 pointRadius: 0,
                 borderWidth: 1.5,
+                spanGaps: true,
             },
         ],
     };
@@ -134,7 +139,15 @@ export function InternetWidget() {
         interaction: { mode: "index" as const, intersect: false },
         plugins: { legend: { display: false } },
         scales: {
-            x: { display: false },
+            x: {
+                ticks: {
+                    autoSkip: true,
+                    color: "#71717a",
+                    font: { size: 10 },
+                    maxTicksLimit: 8,
+                },
+                grid: { display: false },
+            },
             y: { min: 0, max: 100, ticks: { color: "#71717a", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" } },
         },
     };
@@ -161,10 +174,10 @@ export function InternetWidget() {
                 </div>
 
                 {/* 24h history graph */}
-                {chartLabels.length > 5 && (
+                {chartLabels.length > 1 && (
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                            Jan 2026 – present
+                            Last 48 hours
                             <span className="ml-2 font-normal normal-case">
                                 <span className="text-indigo-400">— BGP</span>
                                 {"  "}
