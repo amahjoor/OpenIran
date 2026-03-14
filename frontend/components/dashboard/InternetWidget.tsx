@@ -92,7 +92,7 @@ export function InternetWidget() {
 
     if (loading || !data) {
         return (
-            <Card>
+            <Card className="rounded-[28px] shadow-none">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                         <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
@@ -181,7 +181,7 @@ export function InternetWidget() {
     };
 
     return (
-        <Card>
+        <Card className="rounded-[28px] shadow-none">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                     <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
@@ -193,17 +193,18 @@ export function InternetWidget() {
                 </span>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-                {/* Signal score bars */}
-                <div className="space-y-2">
+            <CardContent className="space-y-0 p-0">
+                <div className="px-6 pb-5">
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted">Signal Health</p>
-                    <ScoreBar score={data.signals.ioda_bgp} label="BGP routing" />
-                    <ScoreBar score={data.signals.ioda_ping} label="Ping active" />
+                    <div className="mt-3 space-y-3">
+                        <ScoreBar score={data.signals.ioda_bgp} label="BGP routing" />
+                        <ScoreBar score={data.signals.ioda_ping} label="Ping active" />
+                    </div>
                 </div>
 
                 {/* YTD history graph with hourly buckets */}
                 {chartLabels.length > 1 && (
-                    <div>
+                    <div className="border-t border-border-default px-6 py-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
                             Year to date
                             <span className="ml-2 font-normal normal-case">
@@ -218,13 +219,14 @@ export function InternetWidget() {
                     </div>
                 )}
 
-                {/* Footer */}
-                <div className="pt-2 border-t border-border-default flex justify-between text-xs text-muted">
+                <div className="flex justify-between border-t border-border-default px-6 py-4 text-xs text-muted">
                     <span>Sources: Cloudflare, IODA</span>
                     <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
                 </div>
 
-                <JsonViewer data={data} label="{ } Raw payload" />
+                <div className="border-t border-border-default px-6 py-4">
+                    <JsonViewer data={data} label="{ } Raw payload" />
+                </div>
             </CardContent>
         </Card>
     );

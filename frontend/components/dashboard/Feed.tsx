@@ -227,14 +227,16 @@ export function Feed() {
     const [error, setError] = React.useState<string | null>(null);
     const [globalTranslate, setGlobalTranslate] = React.useState(false);
 
-    const clampDate = (dateString: string, fallback?: string) => {
-        if (!dateString || dateString.length < 5) return fallback ?? new Date().toISOString();
-        try {
-            const parsed = new Date(dateString);
-            return parsed > new Date() ? new Date().toISOString() : parsed.toISOString();
-        } catch {
-            return fallback ?? new Date().toISOString();
+    const parseDate = (dateString?: string, fallbackString?: string) => {
+        if (dateString) {
+            const ms = Date.parse(dateString);
+            if (!Number.isNaN(ms)) return new Date(ms).toISOString();
         }
+        if (fallbackString) {
+            const msFallback = Date.parse(fallbackString);
+            if (!Number.isNaN(msFallback)) return new Date(msFallback).toISOString();
+        }
+        return new Date().toISOString();
     };
 
     const buildEvents = React.useCallback((strikes: any[], news: any[]) => {
@@ -248,7 +250,7 @@ export function Feed() {
                 title: String(s.title).slice(0, 1000),
                 source: s.source || "Unknown",
                 url: s.url || "",
-                timestamp: clampDate(s.date, s.scannedAt),
+                timestamp: parseDate(s.date, s.scannedAt),
                 created_at: new Date().toISOString(),
                 summary: s.summary || null,
                 title_fa: s.title_fa || null,
@@ -272,7 +274,7 @@ export function Feed() {
                 title: String(n.title).slice(0, 1000),
                 source: n.source || "Unknown",
                 url: n.url || "",
-                timestamp: clampDate(n.date),
+                timestamp: parseDate(n.date),
                 created_at: new Date().toISOString(),
                 summary: n.description || null,
                 lang: n.lang || "en",

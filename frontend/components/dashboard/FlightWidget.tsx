@@ -60,7 +60,7 @@ export function FlightWidget() {
 
     if (loading || !data) {
         return (
-            <Card>
+            <Card className="rounded-[28px] shadow-none">
                 <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
                         <PlaneTakeoff className="h-4 w-4 text-muted" /> Airspace Status
@@ -87,7 +87,7 @@ export function FlightWidget() {
     const arrivals = data.airports?.[0]?.recent_arrivals ?? [];
 
     return (
-        <Card>
+        <Card className="rounded-[28px] shadow-none">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
                     <PlaneTakeoff className="h-4 w-4 text-muted" /> Airspace Status
@@ -99,35 +99,38 @@ export function FlightWidget() {
                 </span>
             </CardHeader>
 
-            <CardContent className="space-y-4">
-                {/* Simple count line — no inner card */}
-                <p className="text-primary">
-                    <span className="text-2xl font-bold tabular-nums">{count}</span>
-                    <span className="text-sm text-muted ml-1.5">aircraft over Iran right now</span>
-                </p>
+            <CardContent className="space-y-0 p-0">
+                <div className="px-6 pb-5">
+                    <p className="text-primary">
+                        <span className="text-3xl font-bold tabular-nums">{count}</span>
+                        <span className="ml-1.5 text-sm text-muted">aircraft over Iran right now</span>
+                    </p>
+                </div>
 
                 {/* Live map links */}
-                <div className="flex gap-2">
-                    <a
-                        href={ADSB_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-border-default hover:border-border-strong py-2 transition-colors text-secondary hover:text-primary"
-                    >
-                        <ExternalLink className="h-3 w-3" /> ADSB Exchange
-                    </a>
-                    <a
-                        href={OPENSKY_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-border-default hover:border-border-strong py-2 transition-colors text-secondary hover:text-primary"
-                    >
-                        <ExternalLink className="h-3 w-3" /> OpenSky
-                    </a>
+                <div className="border-t border-border-default px-6 py-4">
+                    <div className="flex gap-2">
+                        <a
+                            href={ADSB_URL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-border-default py-2 text-secondary transition-colors hover:border-border-strong hover:text-primary"
+                        >
+                            <ExternalLink className="h-3 w-3" /> ADSB Exchange
+                        </a>
+                        <a
+                            href={OPENSKY_URL}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-border-default py-2 text-secondary transition-colors hover:border-border-strong hover:text-primary"
+                        >
+                            <ExternalLink className="h-3 w-3" /> OpenSky
+                        </a>
+                    </div>
                 </div>
 
                 {/* Arrivals */}
-                <div className="space-y-2">
+                <div className="space-y-2 border-t border-border-default px-6 py-4">
                     <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">
                         Recent Arrivals — {data.airports?.[0]?.name ?? "IKA"}
                     </h4>
@@ -148,13 +151,14 @@ export function FlightWidget() {
                     )}
                 </div>
 
-                {/* Footer */}
-                <div className="pt-2 border-t border-border-default flex justify-between text-xs text-muted">
+                <div className="flex justify-between border-t border-border-default px-6 py-4 text-xs text-muted">
                     <span>Source: OpenSky Network</span>
                     <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
                 </div>
 
-                <JsonViewer data={data} label="{ } Raw payload" />
+                <div className="border-t border-border-default px-6 py-4">
+                    <JsonViewer data={data} label="{ } Raw payload" />
+                </div>
             </CardContent>
         </Card>
     );

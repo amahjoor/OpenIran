@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/Header";
 import { Feed } from "@/components/dashboard/Feed";
+import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
 import { FlightWidget } from "@/components/dashboard/FlightWidget";
 
@@ -16,6 +17,9 @@ export default function Home() {
 
           <aside className="px-4 sm:px-0">
             <div className="flex flex-col gap-6 lg:sticky lg:top-20">
+              <section>
+                <TimelineWidget />
+              </section>
               <section>
                 <InternetWidget />
               </section>
