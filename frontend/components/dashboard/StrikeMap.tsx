@@ -41,7 +41,7 @@ function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
 }
 
 export default function StrikeMap({ events }: { events: Array<{ event: DatabaseEvent; raw: Record<string, any> }> }) {
-    const [zoom, setZoom] = useState(5);
+    const [zoom, setZoom] = useState(4);
     const mapEvents = events.filter(({ event }) => event.type === "strike" && event.lat != null && event.lng != null);
 
     if (mapEvents.length === 0) return null;
@@ -55,7 +55,7 @@ export default function StrikeMap({ events }: { events: Array<{ event: DatabaseE
             <div className="h-[250px] w-full">
                 <MapContainer
                     center={[32.4279, 53.6880]}
-                    zoom={5}
+                    zoom={4}
                     scrollWheelZoom={false}
                     style={{ height: "100%", width: "100%", zIndex: 0 }}
                 >
