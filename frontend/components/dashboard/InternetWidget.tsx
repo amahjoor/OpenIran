@@ -39,14 +39,14 @@ const STATUS_CONFIG = {
 function ScoreBar({ score, label, color }: { score: number; label: string; color: string }) {
     return (
         <div className="flex items-center gap-3 text-xs">
-            <span className="w-20 text-zinc-500 flex-shrink-0">{label}</span>
-            <div className="flex-1 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+            <span className="w-20 text-muted flex-shrink-0">{label}</span>
+            <div className="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden">
                 <div
-                    className={`h-full rounded-full transition-all ${score > 80 ? "bg-green-500" : score > 50 ? "bg-yellow-500" : score > 20 ? "bg-orange-500" : "bg-red-500"}`}
+                    className={`h-full rounded-full transition-all ${score > 80 ? "bg-status-ok" : score > 50 ? "bg-status-warn" : score > 20 ? "bg-orange-500" : "bg-status-danger"}`}
                     style={{ width: `${score}%` }}
                 />
             </div>
-            <span className={`w-8 text-right font-mono font-semibold ${score > 80 ? "text-green-400" : score > 50 ? "text-yellow-400" : score > 20 ? "text-orange-400" : "text-red-400"}`}>
+            <span className={`w-8 text-right font-mono font-semibold ${score > 80 ? "text-status-ok" : score > 50 ? "text-status-warn" : score > 20 ? "text-orange-400" : "text-status-danger"}`}>
                 {score}
             </span>
         </div>
@@ -81,11 +81,11 @@ export function InternetWidget() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-zinc-500" /> Internet Connectivity
+                        <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="animate-pulse h-32 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="animate-pulse h-32 rounded-xl bg-surface-2" />
                 </CardContent>
             </Card>
         );
@@ -140,29 +140,29 @@ export function InternetWidget() {
         <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-base flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-zinc-500" /> Internet Connectivity
+                    <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
                 </CardTitle>
                 <Badge variant={config.badge as any}>{config.label}</Badge>
             </CardHeader>
             <CardContent className="space-y-4">
                 {/* Status indicator */}
-                <div className="flex items-center gap-4 rounded-lg bg-zinc-900/50 p-4">
+                <div className="flex items-center gap-4 rounded-lg bg-surface-2 p-4">
                     <div className={`h-12 w-12 flex-shrink-0 rounded-full flex items-center justify-center ${config.bg}`}>
                         <Icon className={`h-6 w-6 ${config.color}`} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold">Connectivity is {config.label}</h3>
-                        <p className="text-xs text-zinc-500">
+                        <h3 className="text-lg font-bold text-primary">Connectivity is {config.label}</h3>
+                        <p className="text-xs text-muted">
                             {data.status === "normal"
                                 ? "Traffic levels appear normal across all monitored signals."
-                                : "Significant drops in traffic detected on Cloudflare Radar and IODA active probes."}
+                                : "Significant drops in traffic detected on IODA active probes."}
                         </p>
                     </div>
                 </div>
 
                 {/* Signal score bars */}
                 <div className="space-y-2">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Signal Health</p>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted">Signal Health</p>
                     <ScoreBar score={data.signals.ioda_bgp} label="BGP routing" color="indigo" />
                     <ScoreBar score={data.signals.ioda_ping} label="Ping active" color="teal" />
                 </div>
@@ -185,7 +185,7 @@ export function InternetWidget() {
                 )}
 
                 {/* Footer */}
-                <div className="pt-2 border-t border-zinc-800 flex justify-between text-xs text-zinc-500">
+                <div className="pt-2 border-t border-border-default flex justify-between text-xs text-muted">
                     <span>Sources: Cloudflare, IODA</span>
                     <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
                 </div>

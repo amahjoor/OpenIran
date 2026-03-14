@@ -1,19 +1,84 @@
 @import "tailwindcss";
 
+/* ─── Semantic Design Tokens ─────────────────────────────────────────────── */
+:root {
+  /* Canvas */
+  --background: #09090b;
+  /* zinc-950 */
+  --foreground: #fafafa;
+  /* zinc-50  */
+
+  /* Text hierarchy */
+  --text-primary: #fafafa;
+  /* zinc-50  — headlines, bold labels */
+  --text-secondary: #a1a1aa;
+  /* zinc-400 — body copy, descriptions */
+  --text-muted: #71717a;
+  /* zinc-500 — timestamps, labels, footers */
+  --text-faint: #3f3f46;
+  /* zinc-700 — disabled / hint */
+
+  /* Surfaces */
+  --surface-0: #09090b;
+  /* zinc-950 — page background */
+  --surface-1: #18181b;
+  /* zinc-900 — cards */
+  --surface-2: #27272a;
+  /* zinc-800 — hover states, inner panels */
+  --surface-3: #3f3f46;
+  /* zinc-700 — active / selected */
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: #27272a;
+  /* zinc-800 */
+  --border-strong: #52525b;
+  /* zinc-600 */
+
+  /* Status */
+  --status-ok: #22c55e;
+  /* green-500 */
+  --status-warn: #eab308;
+  /* yellow-500 */
+  --status-danger: #ef4444;
+  /* red-500 */
+  --status-info: #6366f1;
+  /* indigo-500 */
+}
+
+/* ─── Tailwind v4 theme extension ────────────────────────────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+
+  /* Text utilities: text-primary, text-secondary, text-muted, text-faint */
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-faint: var(--text-faint);
+
+  /* Surface utilities: bg-surface-0 … bg-surface-3 */
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+
+  /* Border utilities: border-subtle, border-default, border-strong */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+
+  /* Status utilities */
+  --color-status-ok: var(--status-ok);
+  --color-status-warn: var(--status-warn);
+  --color-status-danger: var(--status-danger);
+  --color-status-info: var(--status-info);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-:root {
-  --background: #09090b;
-  /* zinc-950 */
-  --foreground: #fafafa;
-  /* zinc-50 */
-}
-
+/* ─── Base ───────────────────────────────────────────────────────────────── */
 body {
   background: var(--background);
   color: var(--foreground);
@@ -22,7 +87,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Base styles for premium look */
 ::selection {
   background: rgba(255, 255, 255, 0.1);
   color: inherit;
@@ -30,8 +94,7 @@ body {
 
 .glass-panel {
   background: rgba(24, 24, 27, 0.7);
-  /* zinc-900 with opacity */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
 }

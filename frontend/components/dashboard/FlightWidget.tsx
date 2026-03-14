@@ -55,7 +55,7 @@ export function FlightWidget() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <div className="animate-pulse h-32 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                    <div className="animate-pulse h-32 rounded-xl bg-surface-2" />
                 </CardContent>
             </Card>
         );
@@ -83,15 +83,15 @@ export function FlightWidget() {
             <CardContent className="space-y-4">
 
                 {/* Count row */}
-                <div className="flex items-center gap-4 rounded-lg bg-zinc-900/50 p-4">
+                <div className="flex items-center gap-4 rounded-lg bg-surface-2 p-4">
                     <div className={`h-10 w-10 flex-shrink-0 rounded-full flex items-center justify-center ${statusConfig.bg}`}>
                         <Icon className={`h-5 w-5 ${statusConfig.color}`} />
                     </div>
                     <div>
-                        <div className="text-2xl font-bold tracking-tight flex items-baseline gap-1">
-                            {count} <span className="text-sm font-normal text-zinc-500">planes overhead</span>
+                        <div className="text-2xl font-bold tracking-tight flex items-baseline gap-1 text-primary">
+                            {count} <span className="text-sm font-normal text-muted">planes overhead</span>
                         </div>
-                        <p className="text-xs text-zinc-500">{statusConfig.msg}</p>
+                        <p className="text-xs text-muted">{statusConfig.msg}</p>
                     </div>
                 </div>
 
@@ -101,7 +101,7 @@ export function FlightWidget() {
                         href={ADSB_URL}
                         target="_blank"
                         rel="noreferrer"
-                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-zinc-700 hover:border-zinc-500 py-2 transition-colors text-zinc-300 hover:text-white"
+                        className="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium rounded-md border border-border-default hover:border-border-strong py-2 transition-colors text-secondary hover:text-primary"
                     >
                         <ExternalLink className="h-3 w-3" /> ADSB Exchange
                     </a>
@@ -118,15 +118,15 @@ export function FlightWidget() {
                 {/* Arrivals */}
                 {arrivals.length > 0 ? (
                     <div className="space-y-2">
-                        <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-muted">
                             Recent Arrivals — {data.airports?.[0]?.name ?? "IKA"}
                         </h4>
                         <div className="flex flex-col gap-2">
                             {arrivals.map((a, i) => (
-                                <div key={i} className="flex justify-between items-center text-sm border-b border-zinc-800 pb-2 last:border-0 last:pb-0">
-                                    <span className="font-mono font-semibold">{a.callsign || "Unknown"}</span>
-                                    <span className="text-zinc-500 truncate max-w-[100px]">{a.estDepartureAirport || "Unknown origin"}</span>
-                                    <Badge variant="outline" className="text-[10px] uppercase font-bold text-zinc-500">
+                                <div key={i} className="flex justify-between items-center text-sm border-b border-border-default pb-2 last:border-0 last:pb-0">
+                                    <span className="font-mono font-semibold text-primary">{a.callsign || "Unknown"}</span>
+                                    <span className="text-muted truncate max-w-[100px]">{a.estDepartureAirport || "Unknown origin"}</span>
+                                    <Badge variant="outline" className="text-[10px] uppercase font-bold text-muted">
                                         {a.lastSeen ? formatDistanceToNow(new Date(a.lastSeen * 1000), { addSuffix: true }) : "Recent"}
                                     </Badge>
                                 </div>
@@ -136,12 +136,12 @@ export function FlightWidget() {
                 ) : (
                     <div className="space-y-1">
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Recent Arrivals — IKA</h4>
-                        <p className="text-sm text-zinc-500">No recent arrivals detected.</p>
+                        <p className="text-sm text-muted">No recent arrivals detected.</p>
                     </div>
                 )}
 
                 {/* Footer */}
-                <div className="pt-2 border-t border-zinc-800 flex justify-between text-xs text-zinc-500">
+                <div className="pt-2 border-t border-border-default flex justify-between text-xs text-muted">
                     <span>Source: OpenSky Network</span>
                     <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
                 </div>

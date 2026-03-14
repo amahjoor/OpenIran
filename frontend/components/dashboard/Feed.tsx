@@ -2,13 +2,17 @@
 
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Flag } from "lucide-react";
+import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
 
 const PAGE_SIZE = 50;
+
+function stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, " ").trim();
+}
 
 function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, any> }) {
     const [expanded, setExpanded] = React.useState(false);
@@ -17,6 +21,8 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
     const timestamp = (() => {
         try { return new Date(event.timestamp); } catch { return new Date(); }
     })();
+
+    const cleanSummary = (event as any).summary ? stripHtml(String((event as any).summary)) : null;
 
     return (
         <Card
@@ -31,7 +37,7 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                             <Flame className="h-5 w-5" />
                         </div>
                     ) : (
-                        <div className="h-10 w-10 bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 rounded-full flex items-center justify-center">
+                        <div className="h-10 w-10 bg-surface-2 text-muted rounded-full flex items-center justify-center">
                             <Info className="h-5 w-5" />
                         </div>
                     )}
@@ -42,9 +48,9 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                     {/* Header row */}
                     <div className="flex items-center justify-between gap-2 mb-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">{event.source}</span>
-                            <span className="text-sm text-zinc-500">·</span>
-                            <span className="text-sm text-zinc-500" title={format(timestamp, "PPpp")}>
+                            <span className="text-sm font-semibold text-primary">{event.source}</span>
+                            <span className="text-sm text-muted">·</span>
+                            <span className="text-sm text-muted" title={format(timestamp, "PPpp")}>
                                 {formatDistanceToNow(timestamp, { addSuffix: true })}
                             </span>
                             {event.side && (
@@ -53,22 +59,19 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                                 </Badge>
                             )}
                             {isStrike && (
-                                <Badge variant="outline" className="text-[10px] text-red-400 border-red-800">Strike</Badge>
+                                <Badge variant="outline" className="text-[10px] text-status-danger border-status-danger/40">Strike</Badge>
                             )}
                         </div>
-                        <div className="flex-shrink-0 text-zinc-500">
+                        <div className="flex-shrink-0 text-muted">
                             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </div>
                     </div>
 
                     {/* Title */}
-                    <p className="text-base text-zinc-900 dark:text-zinc-100 mb-2 leading-snug">{event.title}</p>
+                    <p className="text-base text-primary mb-2 leading-snug">{event.title}</p>
 
-                    {/* Compact metadata badges */}
-                    <div className="flex flex-wrap gap-2 text-xs text-zinc-500">
-                        {(event as any).lang && (
-                            <span className="flex items-center gap-1"><Flag className="h-3 w-3" />{(event as any).lang}</span>
-                        )}
+                    {/* Compact metadata — only show location for strikes, nothing noisy for collapsed news */}
+                    <div className="flex flex-wrap gap-2 text-xs text-muted">
                         {(event as any).location && (
                             <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{(event as any).location}</span>
                         )}
@@ -81,30 +84,30 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                     {expanded && (
                         <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}>
                             {/* Summary */}
-                            {(event as any).summary && (
+                            {cleanSummary && (
                                 <div>
-                                    <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Summary</p>
-                                    <p className="text-sm text-zinc-300 leading-relaxed">{(event as any).summary}</p>
+                                    <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">Summary</p>
+                                    <p className="text-sm text-secondary leading-relaxed">{cleanSummary}</p>
                                 </div>
                             )}
 
                             {/* Field grid */}
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                                 {[
-                                    ["Published", raw.date ? format(new Date(raw.date > new Date() ? new Date() : new Date(raw.date)), "PPpp") : "—"],
-                                    ["Ingested at", raw.scannedAt ? format(new Date(raw.scannedAt), "PPpp") : "—"],
-                                    ["Source", raw.source || "—"],
-                                    ["Language", raw.lang || "—"],
-                                    ["Attribution", raw.side || "—"],
-                                    ["Country", raw.country || "—"],
-                                    ["Location", raw.locationName || "—"],
-                                    ["Coordinates", raw.lat && raw.lng ? `${Number(raw.lat).toFixed(4)}, ${Number(raw.lng).toFixed(4)}` : "—"],
-                                    ["User-reported", raw.userReport ? `Yes (${raw.reportCount ?? 1} report${raw.reportCount !== 1 ? "s" : ""})` : "No"],
-                                    ["Feed URL", raw.feedUrl || "—"],
-                                ].filter(([, v]) => v !== "—").map(([label, value]) => (
+                                    ["Published", (() => { try { const d = new Date(raw.date); return isNaN(d.getTime()) ? null : format(d > new Date() ? new Date() : d, "PPpp"); } catch { return null; } })()],
+                                    ["Ingested at", raw.scannedAt ? (() => { try { return format(new Date(raw.scannedAt), "PPpp"); } catch { return null; } })() : null],
+                                    ["Source", raw.source || null],
+                                    ["Language", raw.lang || null],
+                                    ["Attribution", raw.side || null],
+                                    ["Country", raw.country || null],
+                                    ["Location", raw.locationName || null],
+                                    ["Coordinates", raw.lat && raw.lng ? `${Number(raw.lat).toFixed(4)}, ${Number(raw.lng).toFixed(4)}` : null],
+                                    ["User-reported", raw.userReport ? `Yes (${raw.reportCount ?? 1} report${raw.reportCount !== 1 ? "s" : ""})` : null],
+                                    ["Feed URL", raw.feedUrl || null],
+                                ].filter(([, v]) => v != null).map(([label, value]) => (
                                     <div key={label as string}>
-                                        <p className="text-xs text-zinc-500">{label}</p>
-                                        <p className="text-zinc-200 truncate" title={value as string}>{value}</p>
+                                        <p className="text-xs text-muted">{label}</p>
+                                        <p className="text-secondary truncate" title={value as string}>{value}</p>
                                     </div>
                                 ))}
                             </div>
