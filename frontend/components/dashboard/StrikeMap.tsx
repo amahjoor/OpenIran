@@ -67,8 +67,8 @@ export default function StrikeMap({ events }: { events: Array<{ event: DatabaseE
                     {mapEvents.map(({ event }) => {
                         const code = getSideFlagCode(event.side);
                         // Leaflet zoom doubles resolution every integer level. 
-                        // Base size 18 at zoom 5. Exponentially scale by 1.25x per zoom level.
-                        const computedSize = Math.max(12, Math.min(64, 18 * Math.pow(1.25, zoom - 5)));
+                        // Base size 10 at zoom 5. Exponentially scale by 1.15x per zoom level.
+                        const computedSize = Math.max(8, Math.min(32, 10 * Math.pow(1.15, zoom - 5)));
                         return (
                             <Marker
                                 key={event.id}
