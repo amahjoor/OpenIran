@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
@@ -14,7 +14,7 @@ function stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, " ").trim();
 }
 
-function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, any> }) {
+function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw: Record<string, any>; globalTranslate: boolean }) {
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
 
@@ -23,6 +23,41 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
     })();
 
     const cleanSummary = (event as any).summary ? stripHtml(String((event as any).summary)) : null;
+
+    const isTranslatable = (event as any).lang && (event as any).lang !== "en" && (event as any).lang !== "unknown";
+    const [isTranslating, setIsTranslating] = React.useState(false);
+    const [translatedTitle, setTranslatedTitle] = React.useState<string | null>(null);
+    const [translatedSummary, setTranslatedSummary] = React.useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (!globalTranslate || !isTranslatable || translatedTitle || isTranslating) return;
+
+        const fetchTranslation = async () => {
+            setIsTranslating(true);
+            try {
+                const [titleRes, summaryRes] = await Promise.all([
+                    fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: event.title }) }),
+                    cleanSummary ? fetch("/api/translate", { method: "POST", body: JSON.stringify({ text: cleanSummary }) }) : Promise.resolve(null)
+                ]);
+
+                const titleData = await titleRes.json();
+                if (titleData.translated) setTranslatedTitle(titleData.translated);
+
+                if (summaryRes) {
+                    const summaryData = await summaryRes.json();
+                    if (summaryData.translated) setTranslatedSummary(summaryData.translated);
+                }
+            } catch (err) {
+                console.error("Translation failed:", err);
+            } finally {
+                setIsTranslating(false);
+            }
+        };
+        fetchTranslation();
+    }, [globalTranslate, isTranslatable, translatedTitle, cleanSummary, event.title, isTranslating]);
+
+    const displayTitle = globalTranslate && translatedTitle ? translatedTitle : event.title;
+    const displaySummary = globalTranslate && translatedSummary ? translatedSummary : cleanSummary;
 
     return (
         <Card
@@ -68,7 +103,9 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                     </div>
 
                     {/* Title */}
-                    <p className="text-base text-primary mb-2 leading-snug">{event.title}</p>
+                    <p className={`text-base text-primary mb-2 leading-snug ${globalTranslate ? 'font-sans' : ''}`} dir={globalTranslate && translatedTitle ? 'ltr' : 'auto'}>
+                        {displayTitle}
+                    </p>
 
                     {/* Compact metadata — only show location for strikes, nothing noisy for collapsed news */}
                     <div className="flex flex-wrap gap-2 text-xs text-muted">
@@ -84,10 +121,12 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                     {expanded && (
                         <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}>
                             {/* Summary */}
-                            {cleanSummary && (
+                            {displaySummary && (
                                 <div>
                                     <p className="text-xs font-semibold text-muted uppercase tracking-wider mb-1">Summary</p>
-                                    <p className="text-sm text-secondary leading-relaxed">{cleanSummary}</p>
+                                    <p className={`text-sm text-secondary leading-relaxed ${globalTranslate ? 'font-sans' : ''}`} dir={globalTranslate && translatedSummary ? 'ltr' : 'auto'}>
+                                        {displaySummary}
+                                    </p>
                                 </div>
                             )}
 
@@ -138,18 +177,21 @@ function EventCard({ event, raw }: { event: DatabaseEvent; raw: Record<string, a
                                 </a>
                             )}
 
-                            {/* Source link */}
-                            {raw.url && (
-                                <a
-                                    href={raw.url}
-                                    target="_blank"
-                                    rel="noreferrer noopener"
-                                    className="inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:underline"
-                                    onClick={(e) => e.stopPropagation()}
-                                >
-                                    Read source <ExternalLink className="h-3 w-3" />
-                                </a>
-                            )}
+                            {/* Footer Actions */}
+                            <div className="flex flex-wrap items-center gap-4 pt-2">
+                                {/* Source link */}
+                                {raw.url && (
+                                    <a
+                                        href={raw.url}
+                                        target="_blank"
+                                        rel="noreferrer noopener"
+                                        className="inline-flex items-center gap-1 text-sm font-medium text-blue-400 hover:underline"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Read source <ExternalLink className="h-3 w-3" />
+                                    </a>
+                                )}
+                            </div>
 
                             {/* Raw JSON */}
                             <JsonViewer data={raw} label="{ } Raw JSON" />
@@ -166,6 +208,7 @@ export function Feed() {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
+    const [globalTranslate, setGlobalTranslate] = React.useState(false);
 
     const clampDate = (dateString: string, fallback?: string) => {
         if (!dateString || dateString.length < 5) return fallback ?? new Date().toISOString();
@@ -270,8 +313,19 @@ export function Feed() {
 
     return (
         <div className="flex flex-col gap-4">
+            <div className="flex justify-between items-center px-1">
+                <h2 className="text-xl font-bold tracking-tight text-primary">Live Feed</h2>
+                <button
+                    onClick={() => setGlobalTranslate((t) => !t)}
+                    className={`inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-full border transition-colors ${globalTranslate ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' : 'bg-surface-2 text-muted border-border-default hover:text-secondary'}`}
+                >
+                    <Languages className="h-4 w-4" />
+                    {globalTranslate ? "English Translation On" : "Translate non-English"}
+                </button>
+            </div>
+
             {visible.map(({ event, raw }) => (
-                <EventCard key={event.id} event={event} raw={raw} />
+                <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
             ))}
 
             <div className="py-8 text-center flex justify-center">
