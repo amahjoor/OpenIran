@@ -6,6 +6,12 @@ import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages } 
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
+import dynamic from "next/dynamic";
+
+const StrikeMap = dynamic(() => import("./StrikeMap"), {
+    ssr: false,
+    loading: () => <div className="h-[250px] w-full bg-surface-2 animate-pulse border-b border-border-default" />
+});
 
 const PAGE_SIZE = 50;
 
@@ -351,6 +357,8 @@ export function Feed() {
                     </button>
                 </div>
             </div>
+
+            <StrikeMap events={visible} />
 
             <div className="overflow-hidden divide-y divide-border-default">
                 {visible.map(({ event, raw }) => (
