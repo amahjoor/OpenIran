@@ -13,6 +13,16 @@ function stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, " ").trim();
 }
 
+function formatSourceDate(dateString?: string) {
+    if (!dateString) return null;
+    try {
+        const parsed = new Date(dateString);
+        return Number.isNaN(parsed.getTime()) ? null : format(parsed, "PPpp");
+    } catch {
+        return null;
+    }
+}
+
 function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw: Record<string, any>; globalTranslate: boolean }) {
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
@@ -140,8 +150,8 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                             {/* Field grid */}
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                                 {[
-                                    ["Published", (() => { try { const d = new Date(raw.date); return isNaN(d.getTime()) ? null : format(d > new Date() ? new Date() : d, "PPpp"); } catch { return null; } })()],
-                                    ["Ingested at", raw.scannedAt ? (() => { try { return format(new Date(raw.scannedAt), "PPpp"); } catch { return null; } })() : null],
+                                    ["Published", formatSourceDate(raw.date)],
+                                    ["Ingested at", formatSourceDate(raw.scannedAt)],
                                     ["Source", raw.source || null],
                                     ["Language", raw.lang || null],
                                     ["Attribution", raw.side || null],
