@@ -8,8 +8,8 @@ export default function Home() {
     <div className="relative min-h-screen bg-background">
       <Header />
 
-      <main className="mx-auto max-w-[1280px] px-0 pb-10 sm:px-4 lg:px-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,720px)_320px] lg:justify-center lg:gap-8">
+      <main className="mx-auto max-w-[1440px] px-0 pb-10 sm:px-4 lg:px-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,780px)_minmax(360px,420px)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(0,820px)_minmax(380px,460px)]">
           <div className="min-w-0 lg:border-x lg:border-border-default lg:bg-surface-1">
             <Feed />
           </div>
