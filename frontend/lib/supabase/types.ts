@@ -7,14 +7,16 @@ export interface DatabaseEvent {
     source: string;
     url?: string;
     timestamp: string;
-    retrieved_at: string;
+    retrieved_at?: string;
     lat?: number;
     lng?: number;
     country?: string;
     location?: string;
-    side?: "iran" | "us";
-    lang: string;
-    tags: string[];
+    side?: string;
+    lang?: string;
+    tags?: string[];
+    // Extended fields from raw payload (not all present on every event)
+    [key: string]: any;
 }
 
 export interface InternetStatus {
