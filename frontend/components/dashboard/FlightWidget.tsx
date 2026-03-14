@@ -6,6 +6,7 @@ import { PlaneTakeoff, ExternalLink } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
+import { ADSB_URL, OPENSKY_URL } from "./flight-links";
 
 interface Arrival {
     callsign: string;
@@ -19,9 +20,6 @@ interface FlightData {
     airports: Array<{ icao: string; name: string; recent_arrivals: Arrival[] }>;
     fetched_at: string;
 }
-
-const ADSB_URL = "https://globe.adsbexchange.com/?lat=32.4&lon=53.6&zoom=6";
-const OPENSKY_URL = "https://opensky-network.org/network/explorer?ll=24,43&ur=40,64";
 
 const STATUS_META = {
     normal: { label: "Normal", dotColor: "bg-status-ok", textColor: "text-status-ok" },
