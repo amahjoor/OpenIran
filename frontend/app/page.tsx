@@ -13,10 +13,7 @@ export default function Home() {
 
           {/* Main Feed Column (Left / Center) */}
           <div className="lg:col-span-8 flex flex-col gap-6">
-            <section className="space-y-4">
-              <h2 className="text-xl font-semibold tracking-tight text-primary">Live Updates</h2>
-              <Feed />
-            </section>
+            <Feed />
           </div>
 
           {/* Side Widgets Column (Right) */}

@@ -3,7 +3,6 @@
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
@@ -68,11 +67,11 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
     const displaySource = globalTranslate && translatedSource ? translatedSource : event.source;
 
     return (
-        <Card
-            className={`cursor-pointer transition-colors ${expanded ? "border-border-strong" : "hover:border-border-strong"}`}
+        <article
+            className={`cursor-pointer px-4 py-4 transition-colors sm:px-5 ${expanded ? "bg-surface-2/70" : "hover:bg-surface-2/55"}`}
             onClick={() => setExpanded((e) => !e)}
         >
-            <CardContent className="p-4 flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
                 {/* Icon */}
                 <div className="flex-shrink-0 pt-1">
                     {isStrike ? (
@@ -89,9 +88,10 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                     {/* Header row */}
-                    <div className="flex items-center justify-between gap-2 mb-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-semibold text-primary">{displaySource}</span>
+                    <div className="mb-1 flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                            <span className="truncate text-sm font-semibold text-primary">{displaySource}</span>
+                            <span className="text-sm text-muted">@feed</span>
                             <span className="text-sm text-muted">·</span>
                             <span className="text-sm text-muted" title={format(timestamp, "PPpp")}>
                                 {formatDistanceToNow(timestamp, { addSuffix: true })}
@@ -105,13 +105,13 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                                 <Badge variant="outline" className="text-[10px] text-status-danger border-status-danger/40">Strike</Badge>
                             )}
                         </div>
-                        <div className="flex-shrink-0 text-muted">
+                        <div className="mt-0.5 flex-shrink-0 text-muted">
                             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                         </div>
                     </div>
 
                     {/* Title */}
-                    <p className={`text-base text-primary mb-2 leading-snug ${globalTranslate ? 'font-sans' : ''}`} dir={globalTranslate && translatedTitle ? 'ltr' : 'auto'}>
+                    <p className={`mb-2 text-[15px] leading-6 text-primary ${globalTranslate ? 'font-sans' : ''}`} dir={globalTranslate && translatedTitle ? 'ltr' : 'auto'}>
                         {displayTitle}
                     </p>
 
@@ -127,7 +127,7 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
 
                     {/* Expanded detail panel */}
                     {expanded && (
-                        <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+                        <div className="mt-4 space-y-4 border-t border-border-default pt-4" onClick={(e) => e.stopPropagation()}>
                             {/* Summary */}
                             {displaySummary && (
                                 <div>
@@ -206,8 +206,8 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
                         </div>
                     )}
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </article>
     );
 }
 
@@ -301,9 +301,14 @@ export function Feed() {
     const hasMore = visibleCount < allEvents.length;
     if (loading && allEvents.length === 0) {
         return (
-            <div className="flex flex-col gap-4">
+            <div className="overflow-hidden rounded-2xl border border-border-default bg-surface-1">
+                <div className="border-b border-border-default px-4 py-4 sm:px-5">
+                    <div className="h-6 w-32 animate-pulse rounded bg-surface-2" />
+                </div>
                 {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-32 animate-pulse rounded-xl bg-surface-2" />
+                    <div key={i} className="border-b border-border-default px-4 py-4 last:border-b-0 sm:px-5">
+                        <div className="h-24 animate-pulse rounded-2xl bg-surface-2" />
+                    </div>
                 ))}
             </div>
         );
@@ -319,11 +324,11 @@ export function Feed() {
     }
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="sticky top-14 z-20 -mx-4 border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur md:mx-0 md:rounded-t-2xl md:border md:bg-surface-1/90">
+        <div className="overflow-hidden rounded-2xl border border-border-default bg-surface-1">
+            <div className="sticky top-14 z-20 border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <h2 className="text-xl font-bold tracking-tight text-primary">Live Feed</h2>
+                        <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
                     </div>
                     <button
                         onClick={() => setGlobalTranslate((t) => !t)}
@@ -336,11 +341,13 @@ export function Feed() {
                 </div>
             </div>
 
-            {visible.map(({ event, raw }) => (
-                <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
-            ))}
+            <div className="divide-y divide-border-default">
+                {visible.map(({ event, raw }) => (
+                    <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
+                ))}
+            </div>
 
-            <div className="py-8 text-center flex justify-center">
+            <div className="flex justify-center border-t border-border-default px-4 py-6 text-center sm:px-5">
                 {hasMore ? (
                     <button
                         onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
