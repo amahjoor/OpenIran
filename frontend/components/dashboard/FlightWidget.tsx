@@ -5,7 +5,6 @@ import { formatDistanceToNow } from "date-fns";
 import { PlaneTakeoff, Plane, ShieldAlert } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase/client";
 import type { FlightStatus } from "@/lib/supabase/types";
 
 export function FlightWidget() {
@@ -15,15 +14,11 @@ export function FlightWidget() {
     React.useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const { data: records, error } = await supabase
-                    .from("flight_status")
-                    .select("*")
-                    .order("created_at", { ascending: false })
-                    .limit(1);
-
-                if (error) throw error;
-                if (records && records.length > 0) {
-                    setData(records[0] as FlightStatus);
+                const res = await fetch("/api/flights");
+                if (!res.ok) throw new Error(`Flights fetch failed: ${res.status}`);
+                const record = await res.json();
+                if (record && !record.error) {
+                    setData({ ...record, created_at: record.fetched_at } as FlightStatus);
                 }
             } catch (err) {
                 console.error("Error fetching flight status:", err);
@@ -33,17 +28,8 @@ export function FlightWidget() {
         };
 
         fetchStatus();
-
-        const channel = supabase
-            .channel("public:flight_status")
-            .on("postgres_changes", { event: "*", schema: "public", table: "flight_status" }, (payload) => {
-                setData(payload.new as FlightStatus);
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        const interval = setInterval(fetchStatus, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading || !data) {

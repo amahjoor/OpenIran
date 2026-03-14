@@ -5,7 +5,6 @@ import { formatDistanceToNow } from "date-fns";
 import { Activity, XCircle, AlertTriangle, CheckCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/lib/supabase/client";
 import type { InternetStatus } from "@/lib/supabase/types";
 
 export type InternetStatusType = "normal" | "degraded" | "disrupted" | "blackout";
@@ -17,15 +16,11 @@ export function InternetWidget() {
     React.useEffect(() => {
         const fetchStatus = async () => {
             try {
-                const { data: records, error } = await supabase
-                    .from("internet_status")
-                    .select("*")
-                    .order("created_at", { ascending: false })
-                    .limit(1);
-
-                if (error) throw error;
-                if (records && records.length > 0) {
-                    setData(records[0] as InternetStatus);
+                const res = await fetch("/api/internet");
+                if (!res.ok) throw new Error(`Internet fetch failed: ${res.status}`);
+                const record = await res.json();
+                if (record && !record.error) {
+                    setData({ ...record, created_at: record.fetched_at } as InternetStatus);
                 }
             } catch (err) {
                 console.error("Error fetching internet status:", err);
@@ -35,17 +30,8 @@ export function InternetWidget() {
         };
 
         fetchStatus();
-
-        const channel = supabase
-            .channel("public:internet_status")
-            .on("postgres_changes", { event: "*", schema: "public", table: "internet_status" }, (payload) => {
-                setData(payload.new as InternetStatus);
-            })
-            .subscribe();
-
-        return () => {
-            supabase.removeChannel(channel);
-        };
+        const interval = setInterval(fetchStatus, 60000);
+        return () => clearInterval(interval);
     }, []);
 
     if (loading || !data) {

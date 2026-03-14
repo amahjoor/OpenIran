@@ -38,7 +38,15 @@ Deno.serve(async (req: Request) => {
 
       let ts = new Date().toISOString();
       if (s.date && s.date.length > 5) {
-        try { ts = new Date(s.date).toISOString(); } catch (e) {
+        try {
+          const parsed = new Date(s.date);
+          if (parsed > new Date()) {
+            // Clamp future dates to now()
+            ts = new Date().toISOString();
+          } else {
+            ts = parsed.toISOString();
+          }
+        } catch (e) {
           if (s.scannedAt) ts = s.scannedAt;
         }
       } else if (s.scannedAt) {
@@ -71,7 +79,14 @@ Deno.serve(async (req: Request) => {
 
       let ts = new Date().toISOString();
       if (n.date) {
-        try { ts = new Date(n.date).toISOString(); } catch (e) { }
+        try {
+          const parsed = new Date(n.date);
+          if (parsed > new Date()) {
+            ts = new Date().toISOString();
+          } else {
+            ts = parsed.toISOString();
+          }
+        } catch (e) { }
       }
 
       eventsToInsert.push({
