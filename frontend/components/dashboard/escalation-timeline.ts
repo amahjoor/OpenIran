@@ -10,6 +10,12 @@ export interface EscalationBucket {
     totalCount: number;
 }
 
+export interface EscalationRangeConfig {
+    days?: number;
+    startDay?: string;
+    bucket: "day" | "week" | "month";
+}
+
 function toUtcDayKey(date: Date) {
     return date.toISOString().slice(0, 10);
 }
@@ -29,15 +35,45 @@ function shiftUtcDay(key: string, deltaDays: number) {
     return toUtcDayKey(date);
 }
 
+function getUtcYearStartDay(now: Date) {
+    return toUtcDayKey(new Date(Date.UTC(now.getUTCFullYear(), 0, 1)));
+}
+
+function getUtcMonthStartDay(day: string) {
+    return `${day.slice(0, 7)}-01`;
+}
+
+function getUtcWeekStartDay(day: string) {
+    const date = new Date(`${day}T00:00:00.000Z`);
+    const offset = (date.getUTCDay() + 6) % 7;
+    date.setUTCDate(date.getUTCDate() - offset);
+    return toUtcDayKey(date);
+}
+
+function getBucketStartDay(day: string, bucket: EscalationRangeConfig["bucket"]) {
+    if (bucket === "month") return getUtcMonthStartDay(day);
+    if (bucket === "week") return getUtcWeekStartDay(day);
+    return day;
+}
+
+export function getEscalationRangeConfig(range: "30d" | "90d" | "ytd" | "all", now = new Date()): EscalationRangeConfig {
+    if (range === "30d") return { days: 30, bucket: "day" };
+    if (range === "90d") return { days: 90, bucket: "day" };
+    if (range === "ytd") return { startDay: getUtcYearStartDay(now), bucket: "day" };
+    return { bucket: "day" };
+}
+
 export function buildEscalationBuckets({
     strikes,
     news,
     days,
+    startDay,
     now = new Date(),
 }: {
     strikes: TimelineInputItem[];
     news: TimelineInputItem[];
     days?: number;
+    startDay?: string;
     now?: Date;
 }) {
     const todayKey = toUtcDayKey(new Date(Date.UTC(
@@ -53,6 +89,8 @@ export function buildEscalationBuckets({
 
     const startKey = days
         ? shiftUtcDay(todayKey, -(days - 1))
+        : startDay
+            ? startDay
         : datedKeys[0] ?? todayKey;
 
     const buckets = new Map<string, EscalationBucket>();
@@ -84,6 +122,32 @@ export function buildEscalationBuckets({
     });
 
     return Array.from(buckets.values());
+}
+
+export function aggregateEscalationBuckets(
+    buckets: EscalationBucket[],
+    bucket: EscalationRangeConfig["bucket"]
+) {
+    if (bucket === "day") return buckets;
+
+    const aggregated = new Map<string, EscalationBucket>();
+
+    for (const entry of buckets) {
+        const startDay = getBucketStartDay(entry.day, bucket);
+        const current = aggregated.get(startDay) ?? {
+            day: startDay,
+            newsCount: 0,
+            strikeCount: 0,
+            totalCount: 0,
+        };
+
+        current.newsCount += entry.newsCount;
+        current.strikeCount += entry.strikeCount;
+        current.totalCount += entry.totalCount;
+        aggregated.set(startDay, current);
+    }
+
+    return Array.from(aggregated.values()).sort((left, right) => left.day.localeCompare(right.day));
 }
 
 export function findPeakEscalationBucket(buckets: EscalationBucket[]) {

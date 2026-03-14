@@ -2,8 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  aggregateEscalationBuckets,
   buildEscalationBuckets,
   findPeakEscalationBucket,
+  getEscalationRangeConfig,
 } from "../frontend/components/dashboard/escalation-timeline.ts";
 
 test("buildEscalationBuckets groups news and strikes by UTC day", () => {
@@ -80,5 +82,49 @@ test("buildEscalationBuckets spans from the earliest event when days is omitted"
     { day: "2026-03-12", newsCount: 1, strikeCount: 0, totalCount: 1 },
     { day: "2026-03-13", newsCount: 0, strikeCount: 0, totalCount: 0 },
     { day: "2026-03-14", newsCount: 0, strikeCount: 0, totalCount: 0 },
+  ]);
+});
+
+test("getEscalationRangeConfig keeps daily buckets for YTD and all-time", () => {
+  assert.deepEqual(
+    getEscalationRangeConfig("ytd", new Date("2026-03-14T18:00:00Z")),
+    { startDay: "2026-01-01", bucket: "day" }
+  );
+
+  assert.deepEqual(getEscalationRangeConfig("all", new Date("2026-03-14T18:00:00Z")), {
+    bucket: "day",
+  });
+});
+
+test("aggregateEscalationBuckets merges daily buckets into weeks", () => {
+  const aggregated = aggregateEscalationBuckets(
+    [
+      { day: "2026-03-09", newsCount: 1, strikeCount: 0, totalCount: 1 },
+      { day: "2026-03-10", newsCount: 0, strikeCount: 2, totalCount: 2 },
+      { day: "2026-03-15", newsCount: 1, strikeCount: 1, totalCount: 2 },
+      { day: "2026-03-16", newsCount: 2, strikeCount: 0, totalCount: 2 },
+    ],
+    "week"
+  );
+
+  assert.deepEqual(aggregated, [
+    { day: "2026-03-09", newsCount: 2, strikeCount: 3, totalCount: 5 },
+    { day: "2026-03-16", newsCount: 2, strikeCount: 0, totalCount: 2 },
+  ]);
+});
+
+test("aggregateEscalationBuckets merges daily buckets into months", () => {
+  const aggregated = aggregateEscalationBuckets(
+    [
+      { day: "2026-02-27", newsCount: 1, strikeCount: 0, totalCount: 1 },
+      { day: "2026-02-28", newsCount: 0, strikeCount: 1, totalCount: 1 },
+      { day: "2026-03-01", newsCount: 3, strikeCount: 0, totalCount: 3 },
+    ],
+    "month"
+  );
+
+  assert.deepEqual(aggregated, [
+    { day: "2026-02-01", newsCount: 1, strikeCount: 1, totalCount: 2 },
+    { day: "2026-03-01", newsCount: 3, strikeCount: 0, totalCount: 3 },
   ]);
 });

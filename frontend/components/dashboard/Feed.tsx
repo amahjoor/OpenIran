@@ -358,7 +358,7 @@ export function Feed() {
                 </div>
             </div>
 
-            <StrikeMap events={visible} />
+            <StrikeMap events={allEvents} />
 
             <div className="overflow-hidden divide-y divide-border-default">
                 {visible.map(({ event, raw }) => (
