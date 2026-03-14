@@ -2,6 +2,8 @@
 
 /* ─── Semantic Design Tokens ─────────────────────────────────────────────── */
 :root {
+  color-scheme: light;
+
   /* Canvas */
   --background: #fafafa;
   /* zinc-50 */
@@ -79,6 +81,10 @@
 }
 
 /* ─── Base ───────────────────────────────────────────────────────────────── */
+html {
+  background: var(--background);
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
