@@ -300,7 +300,7 @@ export function Feed() {
     const hasMore = visibleCount < allEvents.length;
     if (loading && allEvents.length === 0) {
         return (
-            <div className="border-border-default bg-surface-1 sm:rounded-2xl sm:border lg:rounded-none lg:border-0 lg:bg-transparent">
+            <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
                 <div className="border-b border-border-default px-4 py-4 sm:px-5">
                     <div className="h-6 w-32 animate-pulse rounded bg-surface-2" />
                 </div>
@@ -323,8 +323,8 @@ export function Feed() {
     }
 
     return (
-        <div className="border-border-default bg-surface-1 sm:rounded-2xl sm:border lg:rounded-none lg:border-0 lg:bg-transparent">
-            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:rounded-t-2xl sm:px-5 lg:sticky lg:top-14 lg:z-20 lg:rounded-none lg:bg-background/92">
+        <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
+            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5 lg:sticky lg:top-14 lg:z-20 lg:bg-background/92">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
@@ -340,7 +340,7 @@ export function Feed() {
                 </div>
             </div>
 
-            <div className="overflow-hidden divide-y divide-border-default sm:rounded-b-2xl lg:rounded-none">
+            <div className="overflow-hidden divide-y divide-border-default">
                 {visible.map(({ event, raw }) => (
                     <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
                 ))}
