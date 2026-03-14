@@ -18,6 +18,10 @@ export interface InternetSignalState {
 const RECENT_WINDOW_SIZE = 12;
 const HOUR_IN_SECONDS = 60 * 60;
 
+export function getYearStartTimestamp(now = new Date()) {
+    return Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000);
+}
+
 export function scoreAgainstBaseline(value: number, avgBaseline: number) {
     if (avgBaseline <= 0) return 100;
     return Math.round(Math.min(1, value / avgBaseline) * 100);

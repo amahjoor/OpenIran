@@ -6,6 +6,7 @@ import { Activity } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import {
+    type TooltipItem,
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
@@ -59,6 +60,14 @@ function ScoreBar({ score, label }: { score: number; label: string }) {
     );
 }
 
+function formatHourLabel(timestamp: number) {
+    return format(new Date(timestamp * 1000), "MMM d, ha");
+}
+
+function formatTooltipTimestamp(timestamp: number) {
+    return format(new Date(timestamp * 1000), "MMM d, yyyy 'at' h:mm a");
+}
+
 export function InternetWidget() {
     const [data, setData] = React.useState<InternetData | null>(null);
     const [loading, setLoading] = React.useState(true);
@@ -103,7 +112,7 @@ export function InternetWidget() {
     const timestamps = Array.from(new Set([...bgpPoints.map((point) => point.t), ...pingPoints.map((point) => point.t)])).sort((left, right) => left - right);
     const bgpByTimestamp = new Map(bgpPoints.map((point) => [point.t, point.v]));
     const pingByTimestamp = new Map(pingPoints.map((point) => [point.t, point.v]));
-    const chartLabels = timestamps.map((timestamp) => format(new Date(timestamp * 1000), "MMM d, ha"));
+    const chartLabels = timestamps.map(formatHourLabel);
 
     const chartData = {
         labels: chartLabels,
@@ -116,6 +125,8 @@ export function InternetWidget() {
                 fill: true,
                 tension: 0.3,
                 pointRadius: 0,
+                pointHoverRadius: 3,
+                pointHitRadius: 12,
                 borderWidth: 1.5,
                 spanGaps: true,
             },
@@ -127,6 +138,8 @@ export function InternetWidget() {
                 fill: true,
                 tension: 0.3,
                 pointRadius: 0,
+                pointHoverRadius: 3,
+                pointHitRadius: 12,
                 borderWidth: 1.5,
                 spanGaps: true,
             },
@@ -137,14 +150,29 @@ export function InternetWidget() {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index" as const, intersect: false },
-        plugins: { legend: { display: false } },
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    title(items: TooltipItem<"line">[]) {
+                        const index = items[0]?.dataIndex;
+                        const timestamp = index === undefined ? undefined : timestamps[index];
+                        return timestamp ? formatTooltipTimestamp(timestamp) : "";
+                    },
+                    label(context: TooltipItem<"line">) {
+                        const value = context.parsed.y;
+                        return `${context.dataset.label}: ${value}`;
+                    },
+                },
+            },
+        },
         scales: {
             x: {
                 ticks: {
                     autoSkip: true,
                     color: "#71717a",
                     font: { size: 10 },
-                    maxTicksLimit: 8,
+                    maxTicksLimit: 10,
                 },
                 grid: { display: false },
             },
@@ -173,11 +201,11 @@ export function InternetWidget() {
                     <ScoreBar score={data.signals.ioda_ping} label="Ping active" />
                 </div>
 
-                {/* 24h history graph */}
+                {/* YTD history graph with hourly buckets */}
                 {chartLabels.length > 1 && (
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                            Last 48 hours
+                            Year to date
                             <span className="ml-2 font-normal normal-case">
                                 <span className="text-indigo-400">— BGP</span>
                                 {"  "}

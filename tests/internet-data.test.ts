@@ -4,8 +4,16 @@ import assert from "node:assert/strict";
 import {
   buildHourlyScoredSeries,
   buildInternetSignalState,
+  getYearStartTimestamp,
   scoreAgainstBaseline
 } from "../frontend/app/api/internet/internet-data.ts";
+
+test("getYearStartTimestamp returns the start of the current UTC year", () => {
+  assert.equal(
+    getYearStartTimestamp(new Date("2026-03-14T17:00:00Z")),
+    Math.floor(Date.parse("2026-01-01T00:00:00Z") / 1000)
+  );
+});
 
 test("scoreAgainstBaseline caps healthy values at 100", () => {
   assert.equal(scoreAgainstBaseline(180, 120), 100);
