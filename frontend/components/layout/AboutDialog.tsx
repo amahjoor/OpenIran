@@ -3,6 +3,8 @@
 import * as React from "react";
 import { X } from "lucide-react";
 
+const EXIT_DURATION_MS = 220;
+
 export function AboutDialog({
     open,
     onClose,
@@ -10,8 +12,23 @@ export function AboutDialog({
     open: boolean;
     onClose: () => void;
 }) {
+    const [rendered, setRendered] = React.useState(open);
+    const [visible, setVisible] = React.useState(false);
+
     React.useEffect(() => {
-        if (!open) return;
+        if (open) {
+            setRendered(true);
+            const frame = window.requestAnimationFrame(() => setVisible(true));
+            return () => window.cancelAnimationFrame(frame);
+        }
+
+        setVisible(false);
+        const timeout = window.setTimeout(() => setRendered(false), EXIT_DURATION_MS);
+        return () => window.clearTimeout(timeout);
+    }, [open]);
+
+    React.useEffect(() => {
+        if (!rendered) return;
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") onClose();
@@ -25,24 +42,34 @@ export function AboutDialog({
             document.body.style.overflow = previousOverflow;
             window.removeEventListener("keydown", handleKeyDown);
         };
-    }, [open, onClose]);
+    }, [rendered, onClose]);
 
-    if (!open) return null;
+    if (!rendered) return null;
 
     return (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center px-4 py-8 sm:px-6">
+        <div
+            className={`fixed inset-0 z-[70] flex items-center justify-center px-4 py-8 transition-opacity duration-200 sm:px-6 ${
+                visible ? "opacity-100" : "opacity-0"
+            }`}
+        >
             <button
                 type="button"
                 aria-label="Close About dialog"
                 onClick={onClose}
-                className="absolute inset-0 bg-background/70 backdrop-blur-sm"
+                className={`absolute inset-0 bg-background/70 backdrop-blur-sm transition-opacity duration-200 ${
+                    visible ? "opacity-100" : "opacity-0"
+                }`}
             />
 
             <div
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="about-dialog-title"
-                className="relative z-10 w-full max-w-2xl rounded-[28px] border border-border-default bg-surface-1 p-6 shadow-2xl sm:p-8"
+                className={`relative z-10 w-full max-w-2xl rounded-[28px] border border-border-default bg-surface-1 p-6 shadow-2xl transition-all duration-200 sm:p-8 ${
+                    visible
+                        ? "translate-y-0 scale-100 opacity-100"
+                        : "translate-y-3 scale-[0.985] opacity-0"
+                }`}
             >
                 <div className="flex items-start justify-between gap-4">
                     <div>
