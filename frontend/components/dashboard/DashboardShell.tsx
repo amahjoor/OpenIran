@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { CalendarRange, Filter, Languages, Settings2 } from "lucide-react";
+import { CalendarRange, Filter, Languages } from "lucide-react";
 import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
@@ -75,20 +75,20 @@ export function DashboardShell() {
         <>
             <div className="border-b border-border-default bg-background/92 backdrop-blur lg:sticky lg:top-14 lg:z-40">
                 <div className="mx-auto max-w-[1440px] px-0 sm:px-4 lg:px-6">
-                    <div className="border-b border-border-default px-4 py-3 sm:px-0">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                                <CalendarRange className="h-4 w-4 text-muted" />
-                                Date Range
-                            </div>
-                            <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
-                                <div className="inline-flex w-fit flex-wrap rounded-full border border-border-default bg-surface-1 p-1">
+                    <div className="px-4 py-3 sm:px-0">
+                        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="inline-flex w-fit flex-wrap items-center rounded-full border border-border-default bg-surface-1 p-1">
+                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                                        <CalendarRange className="h-3.5 w-3.5" />
+                                        Range
+                                    </span>
                                     {DATE_RANGE_OPTIONS.map((option) => (
                                         <button
                                             key={option.key}
                                             type="button"
                                             onClick={() => setFilters((current) => ({ ...current, dateRange: option.key }))}
-                                            className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                                            className={`rounded-full px-2.5 py-1.5 text-xs font-semibold transition-colors ${
                                                 filters.dateRange === option.key
                                                     ? "bg-surface-3 text-primary"
                                                     : "text-muted hover:bg-surface-2 hover:text-primary"
@@ -98,40 +98,34 @@ export function DashboardShell() {
                                         </button>
                                     ))}
                                 </div>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <input
-                                        type="date"
-                                        value={filters.customStart}
-                                        onChange={(event) => setFilters((current) => ({
-                                            ...current,
-                                            customStart: event.target.value,
-                                            dateRange: "custom",
-                                        }))}
-                                        className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
-                                    />
-                                    <span className="text-xs text-muted">to</span>
-                                    <input
-                                        type="date"
-                                        value={filters.customEnd}
-                                        onChange={(event) => setFilters((current) => ({
-                                            ...current,
-                                            customEnd: event.target.value,
-                                            dateRange: "custom",
-                                        }))}
-                                        className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
-                                    />
-                                </div>
+                                {filters.dateRange === "custom" && (
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <input
+                                            type="date"
+                                            value={filters.customStart}
+                                            onChange={(event) => setFilters((current) => ({
+                                                ...current,
+                                                customStart: event.target.value,
+                                                dateRange: "custom",
+                                            }))}
+                                            className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
+                                        />
+                                        <span className="text-xs text-muted">to</span>
+                                        <input
+                                            type="date"
+                                            value={filters.customEnd}
+                                            onChange={(event) => setFilters((current) => ({
+                                                ...current,
+                                                customEnd: event.target.value,
+                                                dateRange: "custom",
+                                            }))}
+                                            className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
+                                        />
+                                    </div>
+                                )}
                             </div>
-                        </div>
-                    </div>
 
-                    <div className="px-4 py-3 sm:px-0">
-                        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-primary">
-                                <Settings2 className="h-4 w-4 text-muted" />
-                                Filters & Settings
-                            </div>
-                            <div className="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center lg:justify-end">
+                            <div className="flex flex-wrap items-center gap-2 xl:justify-end">
                                 <div className="inline-flex w-fit flex-wrap rounded-full border border-border-default bg-surface-1 p-1">
                                     {EVENT_TYPE_OPTIONS.map((option) => (
                                         <button
