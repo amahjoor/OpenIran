@@ -63,7 +63,9 @@ export default function StrikeMap({
                 <MapContainer
                     center={[32.4279, 53.6880]}
                     zoom={4}
-                    scrollWheelZoom={false}
+                    scrollWheelZoom
+                    zoomSnap={1}
+                    zoomDelta={1}
                     style={{ height: "100%", width: "100%", zIndex: 0 }}
                 >
                     <TileLayer
