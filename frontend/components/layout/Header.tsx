@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Activity, Coffee, Info } from "lucide-react";
 
-const BUY_ME_A_COFFEE_URL = "https://www.buymeacoffee.com/";
+const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/mahjoor";
 
 export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
     return (
