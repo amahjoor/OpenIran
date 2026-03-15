@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
 import type { DashboardEventType, FeedEventRecord } from "./dashboard-filters";
-
+import { getExpandedVisibleCount, getFeedEventElementId } from "./feed-navigation";
 const PAGE_SIZE = 50;
 const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
     { key: "all", label: "All" },
@@ -29,7 +29,17 @@ function formatSourceDate(dateString?: string) {
     }
 }
 
-function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw: Record<string, any>; globalTranslate: boolean }) {
+function EventCard({
+    event,
+    raw,
+    globalTranslate,
+    highlighted,
+}: {
+    event: DatabaseEvent;
+    raw: Record<string, any>;
+    globalTranslate: boolean;
+    highlighted: boolean;
+}) {
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
 
@@ -84,10 +94,11 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
 
     return (
         <article
+            id={getFeedEventElementId(event.id)}
             className={`cursor-pointer px-4 py-4 transition-colors sm:px-5 ${expanded ? "bg-surface-2/70" : "hover:bg-surface-2/55"}`}
             onClick={() => setExpanded((e) => !e)}
         >
-            <div className="flex gap-3 sm:gap-4">
+            <div className={`flex gap-3 rounded-xl transition-colors sm:gap-4 ${highlighted ? "bg-surface-2/80 ring-1 ring-border-strong" : ""}`}>
                 {/* Icon */}
                 <div className="flex-shrink-0 pt-1">
                     {isStrike ? (
@@ -234,7 +245,7 @@ interface FeedProps {
     onChangeEventType: (eventType: DashboardEventType) => void;
     globalTranslate: boolean;
     onToggleTranslate: () => void;
-    rangeLabel: string;
+    highlightRequest?: { eventId: string; requestId: number } | null;
 }
 
 export function Feed({
@@ -245,13 +256,41 @@ export function Feed({
     onChangeEventType,
     globalTranslate,
     onToggleTranslate,
-    rangeLabel,
+    highlightRequest,
 }: FeedProps) {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
+    const [activeHighlightId, setActiveHighlightId] = React.useState<string | null>(null);
 
     React.useEffect(() => {
         setVisibleCount(PAGE_SIZE);
     }, [events]);
+
+    React.useEffect(() => {
+        if (!highlightRequest) return;
+
+        const targetIndex = events.findIndex(({ event }) => event.id === highlightRequest.eventId);
+        if (targetIndex === -1) return;
+
+        setVisibleCount((current) => getExpandedVisibleCount(targetIndex, current, PAGE_SIZE));
+        setActiveHighlightId(highlightRequest.eventId);
+    }, [events, highlightRequest]);
+
+    React.useEffect(() => {
+        if (!activeHighlightId) return;
+
+        const frame = window.requestAnimationFrame(() => {
+            document.getElementById(getFeedEventElementId(activeHighlightId))?.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        });
+        const timeout = window.setTimeout(() => setActiveHighlightId(null), 2200);
+
+        return () => {
+            window.cancelAnimationFrame(frame);
+            window.clearTimeout(timeout);
+        };
+    }, [activeHighlightId]);
 
     const visible = events.slice(0, visibleCount);
     const hasMore = visibleCount < events.length;
@@ -281,20 +320,22 @@ export function Feed({
 
     return (
         <div className="border-x border-b border-border-default bg-surface-1 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-0 lg:bg-transparent">
-            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5 lg:shrink-0">
+            <div className="border-b border-border-default bg-background/95 px-4 py-2 text-sm backdrop-blur sm:px-5 lg:shrink-0">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                        <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
-                        <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rangeLabel} · {events.length} updates</p>
+                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                            <h2 className="text-sm font-semibold text-primary">Live Feed</h2>
+                            <span className="text-[11px] uppercase tracking-wider text-muted">{events.length} updates</span>
+                        </div>
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-2">
-                        <div className="inline-flex h-8 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
+                        <div className="inline-flex h-7 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
                             {EVENT_TYPE_OPTIONS.map((option) => (
                                 <button
                                     key={option.key}
                                     type="button"
                                     onClick={() => onChangeEventType(option.key)}
-                                    className={`rounded-sm px-2.5 py-1 text-xs font-semibold transition-colors ${
+                                    className={`rounded-sm px-2 py-0.5 text-[11px] font-semibold transition-colors ${
                                         eventType === option.key
                                             ? "bg-surface-2 text-primary"
                                             : "text-muted hover:bg-surface-2 hover:text-primary"
@@ -310,13 +351,13 @@ export function Feed({
                             aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
                             aria-pressed={globalTranslate}
                             title={globalTranslate ? "Disable translation" : "Enable translation"}
-                            className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
+                            className={`inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
                                 globalTranslate
                                     ? "border-border-strong bg-surface-2 text-primary"
                                     : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
                             }`}
                         >
-                            <Languages className="h-4 w-4" />
+                            <Languages className="h-3.5 w-3.5" />
                         </button>
                     </div>
                 </div>
@@ -325,7 +366,13 @@ export function Feed({
             <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
                 <div className="overflow-hidden divide-y divide-border-default">
                     {visible.map(({ event, raw }) => (
-                        <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
+                        <EventCard
+                            key={event.id}
+                            event={event}
+                            raw={raw}
+                            globalTranslate={globalTranslate}
+                            highlighted={activeHighlightId === event.id}
+                        />
                     ))}
                 </div>
 
