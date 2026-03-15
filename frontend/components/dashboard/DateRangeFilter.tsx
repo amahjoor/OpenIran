@@ -14,6 +14,16 @@ const DATE_RANGE_OPTIONS: Array<{ key: DashboardDateRange; label: string }> = [
     { key: "custom", label: "Custom" },
 ];
 
+function getSelectedLabel(filters: DashboardFilters) {
+    const selected = DATE_RANGE_OPTIONS.find((option) => option.key === filters.dateRange);
+    if (filters.dateRange !== "custom") return selected?.label ?? "Date";
+
+    if (filters.customStart && filters.customEnd) return `${filters.customStart} to ${filters.customEnd}`;
+    if (filters.customStart) return `From ${filters.customStart}`;
+    if (filters.customEnd) return `Until ${filters.customEnd}`;
+    return selected?.label ?? "Date";
+}
+
 export function DateRangeFilter({
     filters,
     onChange,
@@ -23,6 +33,7 @@ export function DateRangeFilter({
 }) {
     const [open, setOpen] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement | null>(null);
+    const selectedLabel = getSelectedLabel(filters);
 
     React.useEffect(() => {
         if (!open) return;
@@ -53,9 +64,10 @@ export function DateRangeFilter({
                     aria-expanded={false}
                     aria-label="Open date filters"
                     onClick={() => setOpen(true)}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-default bg-surface-1 text-muted transition-colors hover:border-border-strong hover:text-primary"
+                    className="inline-flex items-center gap-2 rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs transition-colors hover:border-border-strong hover:text-primary"
                 >
                     <CalendarRange className="h-3.5 w-3.5" />
+                    <span className="font-medium text-primary">{selectedLabel}</span>
                 </button>
             ) : (
                 <>

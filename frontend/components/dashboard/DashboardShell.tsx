@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { CalendarRange, Languages } from "lucide-react";
+import { Languages } from "lucide-react";
 import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
 import { FlightWidget } from "@/components/dashboard/FlightWidget";
 import { ActorFilter } from "@/components/dashboard/ActorFilter";
 import { CountryFilter } from "@/components/dashboard/CountryFilter";
+import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import {
     buildFeedEvents,
     describeDashboardDateRange,
@@ -15,19 +16,8 @@ import {
     getAvailableActors,
     getAvailableCountries,
     getDashboardDateBounds,
-    type DashboardDateRange,
     type DashboardFilters,
 } from "./dashboard-filters";
-
-const DATE_RANGE_OPTIONS: Array<{ key: DashboardDateRange; label: string }> = [
-    { key: "24h", label: "24H" },
-    { key: "3d", label: "3D" },
-    { key: "7d", label: "7D" },
-    { key: "30d", label: "30D" },
-    { key: "ytd", label: "YTD" },
-    { key: "all", label: "All" },
-    { key: "custom", label: "Custom" },
-];
 
 const EVENT_TYPE_OPTIONS = [
     { key: "all", label: "All" },
@@ -85,50 +75,7 @@ export function DashboardShell() {
                     <div className="px-4 py-3 sm:px-0">
                         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
-                                <div className="inline-flex w-fit flex-wrap items-center rounded-full border border-border-default bg-surface-1 p-1">
-                                    <span className="inline-flex items-center px-2 py-1 text-muted">
-                                        <CalendarRange className="h-3.5 w-3.5" />
-                                    </span>
-                                    {DATE_RANGE_OPTIONS.map((option) => (
-                                        <button
-                                            key={option.key}
-                                            type="button"
-                                            onClick={() => setFilters((current) => ({ ...current, dateRange: option.key }))}
-                                            className={`rounded-full px-2.5 py-1.5 text-xs font-semibold transition-colors ${
-                                                filters.dateRange === option.key
-                                                    ? "bg-surface-3 text-primary"
-                                                    : "text-muted hover:bg-surface-2 hover:text-primary"
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                {filters.dateRange === "custom" && (
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <input
-                                            type="date"
-                                            value={filters.customStart}
-                                            onChange={(event) => setFilters((current) => ({
-                                                ...current,
-                                                customStart: event.target.value,
-                                                dateRange: "custom",
-                                            }))}
-                                            className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
-                                        />
-                                        <span className="text-xs text-muted">to</span>
-                                        <input
-                                            type="date"
-                                            value={filters.customEnd}
-                                            onChange={(event) => setFilters((current) => ({
-                                                ...current,
-                                                customEnd: event.target.value,
-                                                dateRange: "custom",
-                                            }))}
-                                            className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
-                                        />
-                                    </div>
-                                )}
+                                <DateRangeFilter filters={filters} onChange={setFilters} />
                             </div>
 
                             <div className="flex flex-wrap items-center gap-2 xl:justify-end">
