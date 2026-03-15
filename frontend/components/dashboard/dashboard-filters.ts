@@ -1,5 +1,5 @@
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import { canonicalizeCountryName } from "./country-flags.ts";
+import { canonicalizeCountryName } from "./country-flags";
 
 export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "all" | "strike" | "news";
