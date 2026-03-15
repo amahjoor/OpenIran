@@ -6,6 +6,7 @@ import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages } 
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
+import type { FeedEventRecord } from "./dashboard-filters";
 import dynamic from "next/dynamic";
 
 const StrikeMap = dynamic(() => import("./StrikeMap"), {
@@ -226,97 +227,24 @@ function EventCard({ event, raw, globalTranslate }: { event: DatabaseEvent; raw:
     );
 }
 
-export function Feed() {
-    const [allEvents, setAllEvents] = React.useState<Array<{ event: DatabaseEvent; raw: Record<string, any> }>>([]);
+interface FeedProps {
+    events: FeedEventRecord[];
+    loading: boolean;
+    error: string | null;
+    globalTranslate: boolean;
+    rangeLabel: string;
+}
+
+export function Feed({ events, loading, error, globalTranslate, rangeLabel }: FeedProps) {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
-    const [loading, setLoading] = React.useState(true);
-    const [error, setError] = React.useState<string | null>(null);
-    const [globalTranslate, setGlobalTranslate] = React.useState(false);
-
-    const parseDate = (dateString?: string, fallbackString?: string) => {
-        if (dateString) {
-            const ms = Date.parse(dateString);
-            if (!Number.isNaN(ms)) return new Date(ms).toISOString();
-        }
-        if (fallbackString) {
-            const msFallback = Date.parse(fallbackString);
-            if (!Number.isNaN(msFallback)) return new Date(msFallback).toISOString();
-        }
-        return new Date().toISOString();
-    };
-
-    const buildEvents = React.useCallback((strikes: any[], news: any[]) => {
-        const combined: Array<{ event: DatabaseEvent; raw: Record<string, any> }> = [];
-
-        strikes.forEach((s: any, idx: number) => {
-            if (!s.title) return;
-            const event: DatabaseEvent = {
-                id: `strike-${idx}-${s.url || s.scannedAt}`,
-                type: "strike",
-                title: String(s.title).slice(0, 1000),
-                source: s.source || "Unknown",
-                url: s.url || "",
-                timestamp: parseDate(s.date, s.scannedAt),
-                created_at: new Date().toISOString(),
-                summary: s.summary || null,
-                title_fa: s.title_fa || null,
-                lat: s.lat ?? null,
-                lng: s.lng ?? null,
-                country: s.country || null,
-                location: s.locationName || null,
-                side: ["iran", "us", "us-israel", "ir"].includes(s.side) ? s.side : undefined,
-                lang: s.lang || "en",
-                tags: Array.isArray(s.tags) ? s.tags : [],
-                severity: s.auto ? "warning" : "critical",
-            } as DatabaseEvent;
-            combined.push({ event, raw: s });
-        });
-
-        news.forEach((n: any, idx: number) => {
-            if (!n.title) return;
-            const event: DatabaseEvent = {
-                id: `news-${idx}-${n.url || n.date}`,
-                type: "news",
-                title: String(n.title).slice(0, 1000),
-                source: n.source || "Unknown",
-                url: n.url || "",
-                timestamp: parseDate(n.date),
-                created_at: new Date().toISOString(),
-                summary: n.description || null,
-                lang: n.lang || "en",
-                tags: [],
-                severity: "info",
-            } as DatabaseEvent;
-            combined.push({ event, raw: n });
-        });
-
-        combined.sort((a, b) => new Date(b.event.timestamp).getTime() - new Date(a.event.timestamp).getTime());
-        return combined;
-    }, []);
 
     React.useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const res = await fetch("/api/events");
-                if (!res.ok) throw new Error(`Events failed: ${res.status}`);
-                const { strikes, news } = await res.json();
-                setAllEvents(buildEvents(strikes, news));
-            } catch (e: any) {
-                console.error("Error fetching events:", e);
-                setError(e.message || "Failed to load events");
-            } finally {
-                setLoading(false);
-            }
-        };
+        setVisibleCount(PAGE_SIZE);
+    }, [events]);
 
-        fetchEvents();
-        const interval = setInterval(fetchEvents, 60000);
-        return () => clearInterval(interval);
-    }, [buildEvents]);
-
-    const visible = allEvents.slice(0, visibleCount);
-    const hasMore = visibleCount < allEvents.length;
-    if (loading && allEvents.length === 0) {
+    const visible = events.slice(0, visibleCount);
+    const hasMore = visibleCount < events.length;
+    if (loading && events.length === 0) {
         return (
             <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
                 <div className="border-b border-border-default px-4 py-4 sm:px-5">
@@ -331,10 +259,10 @@ export function Feed() {
         );
     }
 
-    if (allEvents.length === 0) {
+    if (events.length === 0) {
         return (
             <div className="rounded-xl border border-dashed border-border-default bg-surface-1 py-12 text-center">
-                <p className="text-muted">No events recorded yet.</p>
+                <p className="text-muted">No events match the current filters.</p>
                 {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
             </div>
         );
@@ -342,23 +270,17 @@ export function Feed() {
 
     return (
         <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
-            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5 lg:sticky lg:top-14 lg:z-20 lg:bg-background/92">
+            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
+                        <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rangeLabel} · {events.length} updates</p>
                     </div>
-                    <button
-                        onClick={() => setGlobalTranslate((t) => !t)}
-                        aria-label={globalTranslate ? "Show original text" : "Show English translations"}
-                        title={globalTranslate ? "Show original text" : "Show English translations"}
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${globalTranslate ? "border-border-strong bg-surface-3 text-primary" : "border-border-default bg-surface-2 text-muted hover:border-border-strong hover:bg-surface-3 hover:text-primary"}`}
-                    >
-                        <Languages className="h-4 w-4" />
-                    </button>
+                    <Languages className={`h-4 w-4 flex-shrink-0 ${globalTranslate ? "text-primary" : "text-faint"}`} />
                 </div>
             </div>
 
-            <StrikeMap events={allEvents} />
+            <StrikeMap events={events} />
 
             <div className="overflow-hidden divide-y divide-border-default">
                 {visible.map(({ event, raw }) => (

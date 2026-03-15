@@ -1,7 +1,6 @@
 "use client";
 
-import * as React from "react";
-import { formatDistanceToNow, format, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { BarChart3 } from "lucide-react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -15,22 +14,12 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
     aggregateEscalationBuckets,
-    buildEscalationBuckets,
+    buildEscalationBucketsFromEvents,
     findPeakEscalationBucket,
-    getEscalationRangeConfig,
 } from "./escalation-timeline";
+import type { FeedEventRecord } from "./dashboard-filters";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip);
-
-interface TimelineApiItem {
-    date?: string | null;
-    scannedAt?: string | null;
-}
-
-interface EventsPayload {
-    strikes: TimelineApiItem[];
-    news: TimelineApiItem[];
-}
 
 function formatDayLabel(day: string) {
     return format(parseISO(day), "MMM d");
@@ -55,45 +44,22 @@ function getBucketNoun(bucket: "day" | "week" | "month") {
     if (bucket === "week") return "week";
     return "day";
 }
+interface TimelineWidgetProps {
+    events: FeedEventRecord[];
+    startDay?: string;
+    endDay: string;
+    rangeLabel: string;
+    loading: boolean;
+}
 
-const RANGE_OPTIONS = [
-    { key: "30d", label: "30D" },
-    { key: "90d", label: "90D" },
-    { key: "ytd", label: "YTD" },
-    { key: "all", label: "All" },
-] as const;
+function getTimelineBucketMode(bucketCount: number) {
+    if (bucketCount > 120) return "month" as const;
+    if (bucketCount > 45) return "week" as const;
+    return "day" as const;
+}
 
-export function TimelineWidget() {
-    const [data, setData] = React.useState<EventsPayload | null>(null);
-    const [loading, setLoading] = React.useState(true);
-    const [fetchedAt, setFetchedAt] = React.useState<string | null>(null);
-    const [range, setRange] = React.useState<(typeof RANGE_OPTIONS)[number]["key"]>("ytd");
-
-    React.useEffect(() => {
-        const fetchEvents = async () => {
-            try {
-                const res = await fetch("/api/events");
-                if (!res.ok) throw new Error(`Timeline fetch failed: ${res.status}`);
-
-                const payload = await res.json();
-                setData({
-                    strikes: Array.isArray(payload.strikes) ? payload.strikes : [],
-                    news: Array.isArray(payload.news) ? payload.news : [],
-                });
-                setFetchedAt(new Date().toISOString());
-            } catch (err) {
-                console.error("Error fetching escalation timeline:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchEvents();
-        const interval = setInterval(fetchEvents, 60000);
-        return () => clearInterval(interval);
-    }, []);
-
-    if (loading || !data) {
+export function TimelineWidget({ events, startDay, endDay, rangeLabel, loading }: TimelineWidgetProps) {
+    if (loading) {
         return (
             <Card className="rounded-[28px] shadow-none">
                 <CardHeader className="pb-3">
@@ -108,21 +74,19 @@ export function TimelineWidget() {
         );
     }
 
-    const rangeConfig = getEscalationRangeConfig(range, new Date());
-    const dailyBuckets = buildEscalationBuckets({
-        strikes: data.strikes,
-        news: data.news,
-        days: rangeConfig.days,
-        startDay: rangeConfig.startDay,
-        now: new Date(),
+    const dailyBuckets = buildEscalationBucketsFromEvents({
+        events,
+        startDay,
+        endDay,
     });
-    const buckets = aggregateEscalationBuckets(dailyBuckets, rangeConfig.bucket);
+    const bucketMode = getTimelineBucketMode(dailyBuckets.length);
+    const buckets = aggregateEscalationBuckets(dailyBuckets, bucketMode);
     const peakBucket = findPeakEscalationBucket(buckets);
     const totalNews = buckets.reduce((sum, bucket) => sum + bucket.newsCount, 0);
     const totalStrikes = buckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
 
     const chartData = {
-        labels: buckets.map((bucket) => formatBucketLabel(bucket.day, rangeConfig.bucket)),
+        labels: buckets.map((bucket) => formatBucketLabel(bucket.day, bucketMode)),
         datasets: [
             {
                 label: "News",
@@ -158,8 +122,8 @@ export function TimelineWidget() {
                         const index = items[0]?.dataIndex;
                         const bucket = index === undefined ? null : buckets[index];
                         if (!bucket) return "";
-                        if (rangeConfig.bucket === "month") return format(parseISO(bucket.day), "MMMM yyyy");
-                        if (rangeConfig.bucket === "week") return `Week of ${format(parseISO(bucket.day), "MMM d, yyyy")}`;
+                        if (bucketMode === "month") return format(parseISO(bucket.day), "MMMM yyyy");
+                        if (bucketMode === "week") return `Week of ${format(parseISO(bucket.day), "MMM d, yyyy")}`;
                         return format(parseISO(bucket.day), "MMM d, yyyy");
                     },
                     label(context: TooltipItem<"bar">) {
@@ -181,7 +145,7 @@ export function TimelineWidget() {
                     font: { size: 10 },
                     maxRotation: 0,
                     autoSkip: true,
-                    maxTicksLimit: rangeConfig.bucket === "day" ? 8 : 10,
+                    maxTicksLimit: bucketMode === "day" ? 8 : 10,
                 },
                 grid: { display: false },
             },
@@ -202,27 +166,9 @@ export function TimelineWidget() {
     return (
         <Card className="rounded-[28px] shadow-none">
             <CardHeader className="pb-3">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <BarChart3 className="h-4 w-4 text-muted" /> Escalation Timeline
-                    </CardTitle>
-                    <div className="inline-flex w-fit rounded-full border border-border-default bg-surface-1 p-1">
-                        {RANGE_OPTIONS.map((option) => (
-                            <button
-                                key={option.key}
-                                type="button"
-                                onClick={() => setRange(option.key)}
-                                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-                                    range === option.key
-                                        ? "bg-surface-3 text-primary"
-                                        : "text-muted hover:bg-surface-2 hover:text-primary"
-                                }`}
-                            >
-                                {option.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                    <BarChart3 className="h-4 w-4 text-muted" /> Escalation Timeline
+                </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-0 p-0">
@@ -230,9 +176,9 @@ export function TimelineWidget() {
                     <div>
                         {peakBucket && peakBucket.totalCount > 0 ? (
                             <p className="text-sm text-primary">
-                                <span className="font-semibold">{formatBucketLabel(peakBucket.day, rangeConfig.bucket)}</span>
+                                <span className="font-semibold">{formatBucketLabel(peakBucket.day, bucketMode)}</span>
                                 <span className="text-muted"> was the busiest </span>
-                                <span className="text-muted">{getBucketNoun(rangeConfig.bucket)}</span>
+                                <span className="text-muted">{getBucketNoun(bucketMode)}</span>
                                 <span className="text-muted"> with </span>
                                 <span className="font-semibold">{peakBucket.totalCount}</span>
                                 <span className="text-muted"> updates.</span>
@@ -248,6 +194,7 @@ export function TimelineWidget() {
                         <span>
                             <span className="font-semibold text-primary">{totalStrikes}</span> strikes
                         </span>
+                        <span>{rangeLabel}</span>
                     </div>
                 </div>
 
@@ -259,7 +206,7 @@ export function TimelineWidget() {
 
                 <div className="flex justify-between border-t border-border-default px-6 py-4 text-xs text-muted">
                     <span>Source: Events feed</span>
-                    <span>{fetchedAt ? `Updated ${formatDistanceToNow(new Date(fetchedAt), { addSuffix: true })}` : "Updated just now"}</span>
+                    <span>{bucketMode === "month" ? "Monthly view" : bucketMode === "week" ? "Weekly view" : "Daily view"}</span>
                 </div>
             </CardContent>
         </Card>

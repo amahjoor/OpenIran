@@ -1,3 +1,5 @@
+import type { FeedEventRecord } from "./dashboard-filters";
+
 export interface TimelineInputItem {
     date?: string | null;
     scannedAt?: string | null;
@@ -68,15 +70,17 @@ export function buildEscalationBuckets({
     news,
     days,
     startDay,
+    endDay,
     now = new Date(),
 }: {
     strikes: TimelineInputItem[];
     news: TimelineInputItem[];
     days?: number;
     startDay?: string;
+    endDay?: string;
     now?: Date;
 }) {
-    const todayKey = toUtcDayKey(new Date(Date.UTC(
+    const todayKey = endDay ?? toUtcDayKey(new Date(Date.UTC(
         now.getUTCFullYear(),
         now.getUTCMonth(),
         now.getUTCDate(),
@@ -122,6 +126,23 @@ export function buildEscalationBuckets({
     });
 
     return Array.from(buckets.values());
+}
+
+export function buildEscalationBucketsFromEvents({
+    events,
+    startDay,
+    endDay,
+}: {
+    events: FeedEventRecord[];
+    startDay?: string;
+    endDay: string;
+}) {
+    return buildEscalationBuckets({
+        strikes: events.filter(({ event }) => event.type === "strike").map(({ event }) => ({ date: event.timestamp })),
+        news: events.filter(({ event }) => event.type === "news").map(({ event }) => ({ date: event.timestamp })),
+        startDay,
+        endDay,
+    });
 }
 
 export function aggregateEscalationBuckets(
