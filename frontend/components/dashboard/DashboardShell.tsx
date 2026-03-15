@@ -12,6 +12,7 @@ import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import {
     buildFeedEvents,
     describeDashboardDateRange,
+    filterDashboardContextEvents,
     filterDashboardEvents,
     getAvailableActors,
     getAvailableCountries,
@@ -62,11 +63,12 @@ export function DashboardShell() {
     }, []);
 
     const dateBounds = getDashboardDateBounds(filters);
+    const dashboardEvents = filterDashboardContextEvents(allEvents, filters);
     const filteredEvents = filterDashboardEvents(allEvents, filters);
     const actors = getAvailableActors(allEvents);
     const countries = getAvailableCountries(allEvents);
     const dateRangeLabel = describeDashboardDateRange(filters, dateBounds);
-    const geocodedStrikeEvents = filteredEvents.filter(
+    const geocodedStrikeEvents = dashboardEvents.filter(
         ({ event }) => event.type === "strike" && event.lat != null && event.lng != null
     );
 
@@ -75,8 +77,8 @@ export function DashboardShell() {
             <div className="relative z-40 border-b border-border-default bg-background/92 backdrop-blur">
                 <div className="w-full">
                     <div className="px-4 py-3 sm:px-6 lg:px-8">
-                        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
-                            <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex items-start justify-between gap-3 sm:items-center">
+                            <div className="flex min-w-0 flex-wrap items-center gap-2">
                                 <DateRangeFilter filters={filters} onChange={setFilters} />
 
                                 <CountryFilter
@@ -86,7 +88,7 @@ export function DashboardShell() {
                                 />
                             </div>
 
-                            <div className="flex flex-wrap items-center lg:justify-end">
+                            <div className="flex shrink-0 items-center justify-end pl-2">
                                 <ActorFilter
                                     actors={actors}
                                     value={filters.actors}
@@ -111,40 +113,37 @@ export function DashboardShell() {
                             onToggleTranslate={() => setGlobalTranslate((current) => !current)}
                             rangeLabel={dateRangeLabel}
                         />
-
-                        <section className="border-t border-border-default lg:mt-auto lg:shrink-0">
-                            <TimelineWidget
-                                events={filteredEvents}
-                                dateRange={filters.dateRange}
-                                startDay={dateBounds.startDay}
-                                endDay={dateBounds.endDay}
-                                rangeLabel={dateRangeLabel}
-                                loading={loading}
-                            />
-                        </section>
                     </div>
 
                     <aside className="min-w-0 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-r lg:border-border-default lg:bg-surface-1">
-                        <div className="flex flex-col gap-0 lg:h-full lg:min-h-0">
+                        <div className="flex flex-col gap-0 lg:h-full lg:min-h-0 lg:overflow-y-auto">
                             {geocodedStrikeEvents.length > 0 && (
-                                <section className="overflow-hidden lg:min-h-[240px] lg:flex-1">
-                                    <StrikeMap events={filteredEvents} />
+                                <section className="overflow-hidden border-b border-border-default lg:min-h-[240px] lg:shrink-0">
+                                    <StrikeMap events={dashboardEvents} />
                                 </section>
                             )}
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x sm:divide-border-default lg:shrink-0">
-                                <section className="overflow-hidden">
-                                    <InternetWidget
-                                        dateRange={filters.dateRange}
-                                        customStart={filters.customStart}
-                                        customEnd={filters.customEnd}
-                                        rangeLabel={dateRangeLabel}
-                                    />
-                                </section>
-                                <section className="overflow-hidden">
-                                    <FlightWidget />
-                                </section>
-                            </div>
+                            <section className="overflow-hidden border-b border-border-default lg:shrink-0">
+                                <TimelineWidget
+                                    events={dashboardEvents}
+                                    dateRange={filters.dateRange}
+                                    startDay={dateBounds.startDay}
+                                    endDay={dateBounds.endDay}
+                                    loading={loading}
+                                />
+                            </section>
+
+                            <section className="overflow-hidden border-b border-border-default lg:shrink-0">
+                                <InternetWidget
+                                    dateRange={filters.dateRange}
+                                    customStart={filters.customStart}
+                                    customEnd={filters.customEnd}
+                                />
+                            </section>
+
+                            <section className="overflow-hidden lg:shrink-0">
+                                <FlightWidget />
+                            </section>
                         </div>
                     </aside>
                 </div>

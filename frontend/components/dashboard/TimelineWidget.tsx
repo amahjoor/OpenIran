@@ -16,7 +16,6 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
     buildEscalationBucketsFromEvents,
-    findPeakEscalationBucket,
 } from "./escalation-timeline";
 import type { DashboardDateRange, FeedEventRecord } from "./dashboard-filters";
 
@@ -28,7 +27,7 @@ function formatDayLabel(day: string) {
 
 function formatHourLabel(hour: string, dateRange: DashboardDateRange) {
     const parsed = parseISO(hour);
-    return dateRange === "7d" ? format(parsed, "MMM d ha") : format(parsed, "ha");
+    return dateRange === "7d" ? format(parsed, "MMM d") : format(parsed, "ha");
 }
 
 function formatBucketLabel(day: string, bucket: "hour" | "day", dateRange: DashboardDateRange) {
@@ -36,17 +35,11 @@ function formatBucketLabel(day: string, bucket: "hour" | "day", dateRange: Dashb
     return formatDayLabel(day);
 }
 
-function getBucketNoun(bucket: "hour" | "day") {
-    if (bucket === "hour") return "hour";
-    return "day";
-}
-
 interface TimelineWidgetProps {
     events: FeedEventRecord[];
     dateRange: DashboardDateRange;
     startDay?: string;
     endDay: string;
-    rangeLabel: string;
     loading: boolean;
 }
 
@@ -58,15 +51,15 @@ function getCurrentUtcHourKey() {
     return `${new Date().toISOString().slice(0, 13)}:00:00.000Z`;
 }
 
-export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel, loading }: TimelineWidgetProps) {
+export function TimelineWidget({ events, dateRange, startDay, endDay, loading }: TimelineWidgetProps) {
     if (loading) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <CardHeader className="px-4 pb-3 pt-4">
+                <CardHeader className="px-4 pb-2 pt-3">
                     <CardTitle className="text-base">Escalation Timeline</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                    <div className="mx-4 mb-4 h-36 animate-pulse rounded-xl bg-surface-2" />
+                    <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
             </Card>
         );
@@ -88,10 +81,8 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
             endDay,
             bucket: "day",
         });
-    const peakBucket = findPeakEscalationBucket(buckets);
     const totalNews = buckets.reduce((sum, bucket) => sum + bucket.newsCount, 0);
     const totalStrikes = buckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
-    const totalUpdates = totalNews + totalStrikes;
 
     const chartData = {
         labels: buckets.map((bucket) => formatBucketLabel(bucket.day, bucketMode, dateRange)),
@@ -103,7 +94,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
                 backgroundColor: "rgba(99, 102, 241, 0.14)",
                 fill: true,
                 borderWidth: 2,
-                tension: 0.32,
+                tension: 0.2,
                 pointRadius: 0,
                 pointHoverRadius: 3,
                 pointHitRadius: 14,
@@ -115,7 +106,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
                 backgroundColor: "rgba(239, 68, 68, 0.08)",
                 fill: false,
                 borderWidth: 2,
-                tension: 0.28,
+                tension: 0.18,
                 pointRadius: 0,
                 pointHoverRadius: 3,
                 pointHitRadius: 14,
@@ -158,9 +149,10 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
                 ticks: {
                     color: "#71717a",
                     font: { size: 10 },
+                    minRotation: 0,
                     maxRotation: 0,
                     autoSkip: true,
-                    maxTicksLimit: bucketMode === "hour" ? 6 : 8,
+                    maxTicksLimit: bucketMode === "hour" ? 5 : 6,
                 },
                 grid: {
                     display: false,
@@ -174,7 +166,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
                     color: "#71717a",
                     font: { size: 10 },
                     precision: 0,
-                    stepSize: 1,
+                    maxTicksLimit: 4,
                 },
                 grid: {
                     color: "rgba(24,24,27,0.06)",
@@ -191,13 +183,9 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="px-4 pb-2 pt-4">
+            <CardHeader className="flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5 px-4 pb-1.5 pt-3">
                 <CardTitle className="text-base">Escalation Timeline</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-0 p-0">
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pb-2 text-xs text-muted">
-                    <span className="font-medium text-primary">{rangeLabel}</span>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
                     <span className="inline-flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-indigo-500" />
                         <span>News {totalNews}</span>
@@ -206,23 +194,15 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
                         <span className="h-2 w-2 rounded-full bg-red-500" />
                         <span>Strikes {totalStrikes}</span>
                     </span>
-                    <span>{totalUpdates} total</span>
                 </div>
+            </CardHeader>
 
-                <div className="border-t border-border-default px-4 py-4">
-                    <div style={{ height: 160 }}>
+            <CardContent className="p-0">
+                <div className="px-4 py-2.5">
+                    <div style={{ height: 88 }}>
                         <Line data={chartData} options={chartOptions} />
                     </div>
                 </div>
-
-                {peakBucket && peakBucket.totalCount > 0 && (
-                    <div className="border-t border-border-default px-4 py-2 text-[11px] text-muted">
-                        Peak {getBucketNoun(bucketMode)}{" "}
-                        <span className="font-medium text-primary">{formatBucketLabel(peakBucket.day, bucketMode, dateRange)}</span>
-                        {" · "}
-                        <span>{peakBucket.totalCount} updates</span>
-                    </div>
-                )}
             </CardContent>
         </Card>
     );

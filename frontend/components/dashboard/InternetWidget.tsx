@@ -1,12 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { formatDistanceToNow } from "date-fns";
-import { Activity } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { JsonViewer } from "@/components/ui/JsonViewer";
 import { getDashboardDateWindow, type DashboardDateRange } from "./dashboard-filters";
 import {
+    type ChartOptions,
     type TooltipItem,
     Chart as ChartJS,
     CategoryScale,
@@ -38,31 +36,12 @@ const STATUS_META = {
     blackout: { label: "Blackout", dotColor: "bg-status-danger", textColor: "text-status-danger" },
 };
 
-function PingingDot({ color }: { color: string }) {
-    return (
-        <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
-            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${color} opacity-60`} />
-            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${color}`} />
-        </span>
-    );
-}
+function formatAxisTimestamp(timestamp: number, dateRange: DashboardDateRange) {
+    const date = new Date(timestamp * 1000);
 
-function ScoreBar({ score, label }: { score: number; label: string }) {
-    const barColor = score > 80 ? "bg-status-ok" : score > 50 ? "bg-status-warn" : score > 20 ? "bg-orange-500" : "bg-status-danger";
-    const textColor = score > 80 ? "text-status-ok" : score > 50 ? "text-status-warn" : score > 20 ? "text-orange-400" : "text-status-danger";
-    return (
-        <div className="flex items-center gap-3 text-xs">
-            <span className="w-20 text-muted flex-shrink-0">{label}</span>
-            <div className="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${score}%` }} />
-            </div>
-            <span className={`w-8 text-right font-mono font-semibold ${textColor}`}>{score}</span>
-        </div>
-    );
-}
-
-function formatHourLabel(timestamp: number) {
-    return format(new Date(timestamp * 1000), "MMM d, ha");
+    if (dateRange === "24h") return format(date, "ha");
+    if (dateRange === "3d" || dateRange === "7d") return format(date, "MMM d");
+    return format(date, "MMM");
 }
 
 function formatTooltipTimestamp(timestamp: number) {
@@ -73,10 +52,9 @@ interface InternetWidgetProps {
     dateRange: DashboardDateRange;
     customStart: string;
     customEnd: string;
-    rangeLabel: string;
 }
 
-export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }: InternetWidgetProps) {
+export function InternetWidget({ dateRange, customStart, customEnd }: InternetWidgetProps) {
     const [data, setData] = React.useState<InternetData | null>(null);
     const [loading, setLoading] = React.useState(true);
 
@@ -128,13 +106,11 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <CardHeader className="px-4 pb-2 pt-4">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
-                    </CardTitle>
+                <CardHeader className="px-4 pb-2 pt-3">
+                    <CardTitle className="text-base">Internet Connectivity</CardTitle>
                 </CardHeader>
-                <CardContent>
-                    <div className="h-32 animate-pulse rounded-xl bg-surface-2" />
+                <CardContent className="p-0">
+                    <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
             </Card>
         );
@@ -147,7 +123,9 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
     const timestamps = Array.from(new Set([...bgpPoints.map((point) => point.t), ...pingPoints.map((point) => point.t)])).sort((left, right) => left - right);
     const bgpByTimestamp = new Map(bgpPoints.map((point) => [point.t, point.v]));
     const pingByTimestamp = new Map(pingPoints.map((point) => [point.t, point.v]));
-    const chartLabels = timestamps.map(formatHourLabel);
+    // Keep the full-resolution timestamp for tooltips, but coarsen axis labels
+    // so long-range views stay readable instead of turning into timestamp soup.
+    const chartLabels = timestamps.map((timestamp) => formatAxisTimestamp(timestamp, dateRange));
 
     const chartData = {
         labels: chartLabels,
@@ -156,9 +134,9 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
                 label: "BGP",
                 data: timestamps.map((timestamp) => bgpByTimestamp.get(timestamp) ?? null),
                 borderColor: "rgba(99,102,241,0.9)",
-                backgroundColor: "rgba(99,102,241,0.1)",
-                fill: true,
-                tension: 0.3,
+                backgroundColor: "rgba(99,102,241,0.08)",
+                fill: false,
+                stepped: true,
                 pointRadius: 0,
                 pointHoverRadius: 3,
                 pointHitRadius: 12,
@@ -170,8 +148,8 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
                 data: timestamps.map((timestamp) => pingByTimestamp.get(timestamp) ?? null),
                 borderColor: "rgba(20,184,166,0.9)",
                 backgroundColor: "rgba(20,184,166,0.05)",
-                fill: true,
-                tension: 0.3,
+                fill: false,
+                stepped: true,
                 pointRadius: 0,
                 pointHoverRadius: 3,
                 pointHitRadius: 12,
@@ -181,7 +159,7 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
         ],
     };
 
-    const chartOptions = {
+    const chartOptions: ChartOptions<"line"> = {
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index" as const, intersect: false },
@@ -207,61 +185,54 @@ export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }
                     autoSkip: true,
                     color: "#71717a",
                     font: { size: 10 },
-                    maxTicksLimit: 10,
+                    minRotation: 0,
+                    maxRotation: 0,
+                    maxTicksLimit: dateRange === "24h" ? 5 : 4,
                 },
-                grid: { display: false },
+                grid: { display: false, drawTicks: false },
+                border: { display: false },
             },
-            y: { min: 0, max: 100, ticks: { color: "#71717a", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.05)" } },
+            y: {
+                min: 0,
+                max: 100,
+                ticks: {
+                    display: false,
+                },
+                grid: { color: "rgba(24,24,27,0.06)", drawTicks: false },
+                border: { display: false },
+            },
         },
     };
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="flex flex-row items-center justify-between px-4 pb-2 pt-4">
-                <CardTitle className="text-base flex items-center gap-2">
-                    <Activity className="h-4 w-4 text-muted" /> Internet Connectivity
-                </CardTitle>
-                {/* Status inline — no pill badge */}
-                <span className={`flex items-center gap-1.5 text-sm font-semibold ${meta.textColor}`}>
-                    <PingingDot color={meta.dotColor} />
-                    {meta.label}
-                </span>
+            <CardHeader className="flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5 px-4 pb-1.5 pt-3">
+                <CardTitle className="text-base">Internet Connectivity</CardTitle>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
+                    <span className={`font-medium ${meta.textColor}`}>{meta.label}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                        <span>BGP {data.signals.ioda_bgp}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-teal-500" />
+                        <span>Ping {data.signals.ioda_ping}</span>
+                    </span>
+                </div>
             </CardHeader>
 
-            <CardContent className="space-y-0 p-0">
-                <div className="px-4 pb-4">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted">Signal Health</p>
-                    <div className="mt-3 space-y-3">
-                        <ScoreBar score={data.signals.ioda_bgp} label="BGP routing" />
-                        <ScoreBar score={data.signals.ioda_ping} label="Ping active" />
-                    </div>
-                </div>
-
-                {/* YTD history graph with hourly buckets */}
-                {chartLabels.length > 1 && (
-                    <div className="border-t border-border-default px-4 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                            {rangeLabel}
-                            <span className="ml-2 font-normal normal-case">
-                                <span className="text-indigo-400">— BGP</span>
-                                {"  "}
-                                <span className="text-teal-400">— Ping</span>
-                            </span>
-                        </p>
-                        <div style={{ height: 80 }}>
+            <CardContent className="p-0">
+                {chartLabels.length > 1 ? (
+                    <div className="px-4 py-2.5">
+                        <div style={{ height: 88 }}>
                             <Line data={chartData} options={chartOptions} />
                         </div>
                     </div>
+                ) : (
+                    <div className="px-4 py-2.5 text-xs text-muted">
+                        Not enough signal history yet.
+                    </div>
                 )}
-
-                <div className="flex justify-between border-t border-border-default px-4 py-4 text-xs text-muted">
-                    <span>Sources: Cloudflare, IODA</span>
-                    <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
-                </div>
-
-                <div className="border-t border-border-default px-4 py-4">
-                    <JsonViewer data={data} label="{ } Raw payload" />
-                </div>
             </CardContent>
         </Card>
     );
