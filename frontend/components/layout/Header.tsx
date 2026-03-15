@@ -28,7 +28,7 @@ export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
                         rel="noreferrer"
                         className={NAV_ACTION_CLASS}
                     >
-                        Buy Me a Coffee
+                        Support
                     </a>
                 </nav>
             </div>

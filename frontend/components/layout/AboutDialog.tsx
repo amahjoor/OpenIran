@@ -54,7 +54,7 @@ export function AboutDialog({
                     <button
                         type="button"
                         onClick={onClose}
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border-default text-muted transition-colors hover:border-border-strong hover:text-primary"
+                        className="inline-flex items-center justify-center p-1 text-muted transition-colors hover:text-primary"
                     >
                         <X className="h-4 w-4" />
                     </button>
