@@ -2,7 +2,7 @@ import * as React from "react";
 
 const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/mahjoor";
 const NAV_ACTION_CLASS =
-    "inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-muted transition-colors hover:text-primary";
+    "inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-muted transition-colors hover:text-primary";
 
 export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
     return (

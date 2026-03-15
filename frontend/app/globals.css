@@ -97,6 +97,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a[href],
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
+
 ::selection {
   background: rgba(24, 24, 27, 0.12);
   color: inherit;
