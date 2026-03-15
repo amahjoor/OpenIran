@@ -11,7 +11,6 @@ import { CountryFilter } from "@/components/dashboard/CountryFilter";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
 import {
     buildFeedEvents,
-    describeDashboardDateRange,
     filterDashboardContextEvents,
     filterDashboardEvents,
     getAvailableActors,
@@ -68,7 +67,6 @@ export function DashboardShell() {
     const filteredEvents = filterDashboardEvents(allEvents, filters);
     const actors = getAvailableActors(allEvents);
     const countries = getAvailableCountries(allEvents);
-    const dateRangeLabel = describeDashboardDateRange(filters, dateBounds);
     const geocodedStrikeEvents = dashboardEvents.filter(
         ({ event }) => event.type === "strike" && event.lat != null && event.lng != null
     );

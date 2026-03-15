@@ -13,11 +13,12 @@ import {
     PointElement,
     Tooltip,
 } from "chart.js";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
     buildEscalationBucketsFromEvents,
 } from "./escalation-timeline";
 import type { DashboardDateRange, FeedEventRecord } from "./dashboard-filters";
+import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Filler, Tooltip);
 
@@ -55,9 +56,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     if (loading) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <CardHeader className="px-4 pb-2 pt-3">
-                    <CardTitle className="text-base">Escalation Timeline</CardTitle>
-                </CardHeader>
+                <DashboardSectionHeader title="Escalation Timeline" className="pb-2" />
                 <CardContent className="p-0">
                     <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -183,9 +182,10 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5 px-4 pb-1.5 pt-3">
-                <CardTitle className="text-base">Escalation Timeline</CardTitle>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
+            <DashboardSectionHeader
+                title="Escalation Timeline"
+                meta={(
+                    <>
                     <span className="inline-flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-indigo-500" />
                         <span>News {totalNews}</span>
@@ -194,8 +194,10 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
                         <span className="h-2 w-2 rounded-full bg-red-500" />
                         <span>Strikes {totalStrikes}</span>
                     </span>
-                </div>
-            </CardHeader>
+                    </>
+                )}
+                className="pb-1.5"
+            />
 
             <CardContent className="p-0">
                 <div className="px-4 py-2.5">

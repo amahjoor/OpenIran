@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { formatDistanceToNow } from "date-fns";
-import { PlaneTakeoff, ExternalLink } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { ExternalLink } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import { ADSB_URL, OPENSKY_URL } from "./flight-links";
 import type { FlightSnapshot } from "@/app/api/flights/flight-data";
+import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 type FlightData = FlightSnapshot;
 
@@ -52,11 +53,7 @@ export function FlightWidget() {
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <CardHeader className="px-4 pb-2 pt-4">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <PlaneTakeoff className="h-4 w-4 text-muted" /> Airspace Status
-                    </CardTitle>
-                </CardHeader>
+                <DashboardSectionHeader title="Airspace Status" className="pb-2" />
                 <CardContent>
                     <div className="h-32 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -70,16 +67,16 @@ export function FlightWidget() {
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="flex flex-row items-center justify-between px-4 pb-2 pt-4">
-                <CardTitle className="text-base flex items-center gap-2">
-                    <PlaneTakeoff className="h-4 w-4 text-muted" /> Airspace Status
-                </CardTitle>
-                {/* Status inline — no pill badge */}
-                <span className={`flex items-center gap-1.5 text-sm font-semibold ${meta.textColor}`}>
-                    <PingingDot color={meta.dotColor} />
-                    {meta.label}
-                </span>
-            </CardHeader>
+            <DashboardSectionHeader
+                title="Airspace Status"
+                meta={(
+                    <span className={`inline-flex items-center gap-1.5 font-medium ${meta.textColor}`}>
+                        <PingingDot color={meta.dotColor} />
+                        {meta.label}
+                    </span>
+                )}
+                className="pb-2"
+            />
 
             <CardContent className="space-y-0 p-0">
                 <div className="px-4 pb-4">

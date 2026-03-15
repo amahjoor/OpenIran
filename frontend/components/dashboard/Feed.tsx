@@ -8,6 +8,7 @@ import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
 import type { DashboardEventType, FeedEventRecord } from "./dashboard-filters";
 import { getExpandedVisibleCount, getFeedEventElementId } from "./feed-navigation";
+import { DashboardSectionHeader } from "./DashboardSectionHeader";
 const PAGE_SIZE = 50;
 const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
     { key: "all", label: "All" },
@@ -320,47 +321,45 @@ export function Feed({
 
     return (
         <div className="border-x border-b border-border-default bg-surface-1 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-0 lg:bg-transparent">
-            <div className="border-b border-border-default bg-background/95 px-4 py-2 text-sm backdrop-blur sm:px-5 lg:shrink-0">
-                <div className="flex items-center justify-between gap-3">
-                    <div className="min-w-0">
-                        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                            <h2 className="text-sm font-semibold text-primary">Live Feed</h2>
-                            <span className="text-[11px] uppercase tracking-wider text-muted">{events.length} updates</span>
-                        </div>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                        <div className="inline-flex h-7 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
-                            {EVENT_TYPE_OPTIONS.map((option) => (
-                                <button
-                                    key={option.key}
-                                    type="button"
-                                    onClick={() => onChangeEventType(option.key)}
-                                    className={`rounded-sm px-2 py-0.5 text-[11px] font-semibold transition-colors ${
-                                        eventType === option.key
-                                            ? "bg-surface-2 text-primary"
-                                            : "text-muted hover:bg-surface-2 hover:text-primary"
-                                    }`}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            type="button"
-                            onClick={onToggleTranslate}
-                            aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
-                            aria-pressed={globalTranslate}
-                            title={globalTranslate ? "Disable translation" : "Enable translation"}
-                            className={`inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
-                                globalTranslate
-                                    ? "border-border-strong bg-surface-2 text-primary"
-                                    : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
-                            }`}
-                        >
-                            <Languages className="h-3.5 w-3.5" />
-                        </button>
-                    </div>
-                </div>
+            <div className="border-b border-border-default lg:shrink-0">
+                <DashboardSectionHeader
+                    title="Live Feed"
+                    meta={<span>{events.length} updates</span>}
+                    actions={(
+                        <>
+                            <div className="inline-flex h-7 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent px-1 py-0.5">
+                                {EVENT_TYPE_OPTIONS.map((option) => (
+                                    <button
+                                        key={option.key}
+                                        type="button"
+                                        onClick={() => onChangeEventType(option.key)}
+                                        className={`rounded-sm px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                                            eventType === option.key
+                                                ? "bg-surface-2 text-primary"
+                                                : "text-muted hover:bg-surface-2 hover:text-primary"
+                                        }`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onToggleTranslate}
+                                aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
+                                aria-pressed={globalTranslate}
+                                title={globalTranslate ? "Disable translation" : "Enable translation"}
+                                className={`inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
+                                    globalTranslate
+                                        ? "border-border-strong bg-surface-2 text-primary"
+                                        : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
+                                }`}
+                            >
+                                <Languages className="h-3.5 w-3.5" />
+                            </button>
+                        </>
+                    )}
+                />
             </div>
 
             <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">

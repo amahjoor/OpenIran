@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaf
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { DatabaseEvent } from "@/lib/supabase/types";
+import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 function getSideFlagCode(side?: "iran" | "us" | "us-israel" | "ir" | string | null): string {
     if (!side) return "xx";
@@ -54,10 +55,10 @@ export default function StrikeMap({
 
     return (
         <div className="relative z-0 border-b border-border-default lg:flex lg:h-full lg:flex-col">
-            <div className="flex items-center justify-between px-4 py-3 text-sm sm:px-5">
-                <span className="font-semibold text-primary">Strike Map</span>
-                <span className="text-xs text-muted">{mapEvents.length} geocoded strikes</span>
-            </div>
+            <DashboardSectionHeader
+                title="Strike Map"
+                meta={<span>{mapEvents.length} geocoded strikes</span>}
+            />
             <div className="h-[250px] w-full lg:min-h-0 lg:flex-1">
                 <MapContainer
                     center={[32.4279, 53.6880]}

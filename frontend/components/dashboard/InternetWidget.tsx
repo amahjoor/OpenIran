@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { getDashboardDateWindow, type DashboardDateRange } from "./dashboard-filters";
 import {
     type ChartOptions,
@@ -16,6 +16,7 @@ import {
 } from "chart.js";
 import { Line } from "react-chartjs-2";
 import { format } from "date-fns";
+import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Filler);
 
@@ -106,9 +107,7 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <CardHeader className="px-4 pb-2 pt-3">
-                    <CardTitle className="text-base">Internet Connectivity</CardTitle>
-                </CardHeader>
+                <DashboardSectionHeader title="Internet Connectivity" className="pb-2" />
                 <CardContent className="p-0">
                     <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -206,9 +205,10 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="flex flex-row flex-wrap items-center gap-x-4 gap-y-1.5 px-4 pb-1.5 pt-3">
-                <CardTitle className="text-base">Internet Connectivity</CardTitle>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted">
+            <DashboardSectionHeader
+                title="Internet Connectivity"
+                meta={(
+                    <>
                     <span className={`font-medium ${meta.textColor}`}>{meta.label}</span>
                     <span className="inline-flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-indigo-500" />
@@ -218,8 +218,10 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                         <span className="h-2 w-2 rounded-full bg-teal-500" />
                         <span>Ping {data.signals.ioda_ping}</span>
                     </span>
-                </div>
-            </CardHeader>
+                    </>
+                )}
+                className="pb-1.5"
+            />
 
             <CardContent className="p-0">
                 {chartLabels.length > 1 ? (
