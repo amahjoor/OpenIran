@@ -9,6 +9,7 @@ export interface DashboardFilters {
     customStart: string;
     customEnd: string;
     eventType: DashboardEventType;
+    source?: string;
     countries: string[];
     actors: string[];
 }
@@ -260,6 +261,16 @@ export function getAvailableCountries(events: FeedEventRecord[]) {
     ).sort((left, right) => left.localeCompare(right));
 }
 
+export function getAvailableSources(events: FeedEventRecord[]) {
+    return Array.from(
+        new Set(
+            events
+                .map(({ event }) => event.source?.trim())
+                .filter((source): source is string => Boolean(source))
+        )
+    ).sort((left, right) => left.localeCompare(right));
+}
+
 export function filterDashboardEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
     // Short rolling windows should behave as true hour-based windows. The
     // longer presets stay day-bounded so the feed, map, and summaries align.
@@ -274,6 +285,7 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
             .map((actor) => canonicalizeStrikeSide(actor))
             .filter((actor): actor is CanonicalStrikeSide => actor !== undefined)
     );
+    const selectedSource = filters.source?.trim();
 
     return events.filter(({ event }) => {
         const timestamp = Date.parse(event.timestamp);
@@ -283,6 +295,7 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
         if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
+        if (selectedSource && event.source !== selectedSource) return false;
         if (selectedCountries.size > 0 && (!normalizedCountry || !selectedCountries.has(normalizedCountry))) return false;
         if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
         return true;
@@ -290,5 +303,5 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
 }
 
 export function filterDashboardContextEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
-    return filterDashboardEvents(events, { ...filters, eventType: "all" }, now);
+    return filterDashboardEvents(events, { ...filters, eventType: "all", source: "" }, now);
 }

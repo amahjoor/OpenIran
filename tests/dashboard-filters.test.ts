@@ -11,6 +11,7 @@ import {
   formatActorSelectionLabel,
   getAvailableActors,
   getAvailableCountries,
+  getAvailableSources,
   getDashboardDateBounds,
   getDashboardDateWindow,
   getEffectiveActorSelection,
@@ -186,6 +187,7 @@ test("filterDashboardContextEvents ignores event type while keeping other filter
       customStart: "",
       customEnd: "",
       eventType: "strike",
+      source: "Source A",
       countries: ["Iran"],
       actors: [],
     },
@@ -193,6 +195,47 @@ test("filterDashboardContextEvents ignores event type while keeping other filter
   );
 
   assert.deepEqual(filtered.map((entry) => entry.event.title), ["News A", "Strike A"]);
+});
+
+test("getAvailableSources returns unique sorted source values", () => {
+  const events = buildFeedEvents(
+    [
+      { title: "Strike A", source: "Source Z", date: "2026-03-14T10:00:00Z", country: "Iran" },
+      { title: "Strike B", source: "Source A", date: "2026-03-13T10:00:00Z", country: "Iran" },
+    ],
+    [
+      { title: "News A", source: "Source A", date: "2026-03-12T10:00:00Z", country: "Israel" },
+      { title: "News B", source: "Source M", date: "2026-03-11T10:00:00Z", country: "Iraq" },
+    ],
+  );
+
+  assert.deepEqual(getAvailableSources(events), ["Source A", "Source M", "Source Z"]);
+});
+
+test("filterDashboardEvents applies a selected source", () => {
+  const events = buildFeedEvents(
+    [{ title: "Strike A", source: "Source A", date: "2026-03-14T10:00:00Z", country: "Iran" }],
+    [
+      { title: "News A", source: "Source B", date: "2026-03-12T10:00:00Z", country: "Israel" },
+      { title: "News B", source: "Source A", date: "2026-03-11T10:00:00Z", country: "Iraq" },
+    ],
+  );
+
+  const filtered = filterDashboardEvents(
+    events,
+    {
+      dateRange: "ytd",
+      customStart: "",
+      customEnd: "",
+      eventType: "all",
+      source: "Source A",
+      countries: [],
+      actors: [],
+    },
+    new Date("2026-03-14T18:00:00Z"),
+  );
+
+  assert.deepEqual(filtered.map((entry) => entry.event.title), ["Strike A", "News B"]);
 });
 
 test("filterDashboardEvents applies a rolling last 24 hours window", () => {

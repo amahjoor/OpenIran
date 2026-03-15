@@ -7,13 +7,23 @@ import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
 import type { DashboardEventType, FeedEventRecord } from "./dashboard-filters";
-import { getExpandedVisibleCount, getFeedEventElementId } from "./feed-navigation";
+import {
+    type FeedSortOrder,
+    getExpandedVisibleCount,
+    getFeedEventElementId,
+    sortFeedEvents,
+} from "./feed-navigation";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
+import { SourceFilter } from "./SourceFilter";
 const PAGE_SIZE = 50;
 const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
     { key: "all", label: "All" },
     { key: "strike", label: "Strikes" },
     { key: "news", label: "News" },
+];
+const SORT_OPTIONS: Array<{ key: FeedSortOrder; label: string }> = [
+    { key: "newest", label: "Newest" },
+    { key: "oldest", label: "Oldest" },
 ];
 
 function stripHtml(html: string): string {
@@ -244,6 +254,9 @@ interface FeedProps {
     error: string | null;
     eventType: DashboardEventType;
     onChangeEventType: (eventType: DashboardEventType) => void;
+    sources: string[];
+    source: string;
+    onChangeSource: (source: string) => void;
     globalTranslate: boolean;
     onToggleTranslate: () => void;
     highlightRequest?: { eventId: string; requestId: number } | null;
@@ -255,26 +268,31 @@ export function Feed({
     error,
     eventType,
     onChangeEventType,
+    sources,
+    source,
+    onChangeSource,
     globalTranslate,
     onToggleTranslate,
     highlightRequest,
 }: FeedProps) {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
     const [activeHighlightId, setActiveHighlightId] = React.useState<string | null>(null);
+    const [sortOrder, setSortOrder] = React.useState<FeedSortOrder>("newest");
+    const sortedEvents = sortFeedEvents(events, sortOrder);
 
     React.useEffect(() => {
         setVisibleCount(PAGE_SIZE);
-    }, [events]);
+    }, [events, sortOrder]);
 
     React.useEffect(() => {
         if (!highlightRequest) return;
 
-        const targetIndex = events.findIndex(({ event }) => event.id === highlightRequest.eventId);
+        const targetIndex = sortedEvents.findIndex(({ event }) => event.id === highlightRequest.eventId);
         if (targetIndex === -1) return;
 
         setVisibleCount((current) => getExpandedVisibleCount(targetIndex, current, PAGE_SIZE));
         setActiveHighlightId(highlightRequest.eventId);
-    }, [events, highlightRequest]);
+    }, [highlightRequest, sortedEvents]);
 
     React.useEffect(() => {
         if (!activeHighlightId) return;
@@ -293,13 +311,13 @@ export function Feed({
         };
     }, [activeHighlightId]);
 
-    const visible = events.slice(0, visibleCount);
-    const hasMore = visibleCount < events.length;
+    const visible = sortedEvents.slice(0, visibleCount);
+    const hasMore = visibleCount < sortedEvents.length;
     const header = (
         <div className="border-b border-border-default lg:shrink-0">
             <DashboardSectionHeader
                 title="Live Feed"
-                meta={<span>{events.length} updates</span>}
+                meta={<span>{sortedEvents.length} updates</span>}
                 actions={(
                     <>
                         <div className="inline-flex h-7 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent px-1 py-0.5">
@@ -318,6 +336,27 @@ export function Feed({
                                 </button>
                             ))}
                         </div>
+                        <div className="inline-flex h-7 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent px-1 py-0.5">
+                            {SORT_OPTIONS.map((option) => (
+                                <button
+                                    key={option.key}
+                                    type="button"
+                                    onClick={() => setSortOrder(option.key)}
+                                    className={`rounded-sm px-2 py-0.5 text-[11px] font-semibold transition-colors ${
+                                        sortOrder === option.key
+                                            ? "bg-surface-2 text-primary"
+                                            : "text-muted hover:bg-surface-2 hover:text-primary"
+                                    }`}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                        <SourceFilter
+                            sources={sources}
+                            value={source}
+                            onChange={onChangeSource}
+                        />
                         <button
                             type="button"
                             onClick={onToggleTranslate}

@@ -15,6 +15,7 @@ import {
     filterDashboardEvents,
     getAvailableActors,
     getAvailableCountries,
+    getAvailableSources,
     getDashboardDateBounds,
     type DashboardFilters,
 } from "./dashboard-filters";
@@ -35,6 +36,7 @@ export function DashboardShell() {
         customStart: "",
         customEnd: "",
         eventType: "all",
+        source: "",
         countries: [],
         actors: [],
     });
@@ -64,9 +66,11 @@ export function DashboardShell() {
 
     const dateBounds = getDashboardDateBounds(filters);
     const dashboardEvents = filterDashboardContextEvents(allEvents, filters);
+    const sourceScopedFeedEvents = filterDashboardEvents(allEvents, { ...filters, source: "" });
     const filteredEvents = filterDashboardEvents(allEvents, filters);
     const actors = getAvailableActors(allEvents);
     const countries = getAvailableCountries(allEvents);
+    const sources = getAvailableSources(sourceScopedFeedEvents);
     const geocodedStrikeEvents = dashboardEvents.filter(
         ({ event }) => event.type === "strike" && event.lat != null && event.lng != null
     );
@@ -108,6 +112,9 @@ export function DashboardShell() {
                             error={error}
                             eventType={filters.eventType}
                             onChangeEventType={(eventType) => setFilters((current) => ({ ...current, eventType }))}
+                            sources={sources}
+                            source={filters.source ?? ""}
+                            onChangeSource={(source) => setFilters((current) => ({ ...current, source }))}
                             globalTranslate={globalTranslate}
                             onToggleTranslate={() => setGlobalTranslate((current) => !current)}
                             highlightRequest={highlightRequest}
@@ -121,12 +128,16 @@ export function DashboardShell() {
                                     <StrikeMap
                                         events={dashboardEvents}
                                         onSelectEvent={(eventId) => {
-                                            setFilters((current) => ({ ...current, eventType: "all" }));
+                                            setFilters((current) => ({ ...current, eventType: "all", source: "" }));
                                             setHighlightRequest({ eventId, requestId: Date.now() });
                                         }}
                                     />
                                 </section>
                             )}
+
+                            <section className="overflow-hidden border-b border-border-default lg:shrink-0">
+                                <FlightWidget />
+                            </section>
 
                             <section className="overflow-hidden border-b border-border-default lg:shrink-0">
                                 <TimelineWidget
@@ -144,10 +155,6 @@ export function DashboardShell() {
                                     customStart={filters.customStart}
                                     customEnd={filters.customEnd}
                                 />
-                            </section>
-
-                            <section className="overflow-hidden lg:shrink-0">
-                                <FlightWidget />
                             </section>
                         </div>
                     </aside>
