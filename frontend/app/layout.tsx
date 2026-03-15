@@ -13,8 +13,24 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Iran Situation Tracker",
-  description: "Real-time tracker for the situation in Iran, including news, strikes, internet status, and flight data.",
+  title: "OpenIran",
+  description: "High-signal monitoring of the situation in Iran. Real-time tracking of news, strikes, internet status, and aviation signals.",
+  icons: {
+    icon: "/OpenIran.png",
+    apple: "/OpenIran.png",
+  },
+  openGraph: {
+    title: "OpenIran",
+    description: "High-signal monitoring of the situation in Iran.",
+    images: ["/OpenIran.png"],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "OpenIran",
+    description: "High-signal monitoring of the situation in Iran.",
+    images: ["/OpenIran.png"],
+  },
 };
 
 export default function RootLayout({

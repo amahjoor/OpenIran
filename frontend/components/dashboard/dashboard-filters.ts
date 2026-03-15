@@ -1,4 +1,5 @@
 import type { DatabaseEvent } from "@/lib/supabase/types";
+import { canonicalizeCountryName } from "./country-flags";
 
 export type DashboardDateRange = "30d" | "90d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "all" | "strike" | "news";
@@ -8,7 +9,7 @@ export interface DashboardFilters {
     customStart: string;
     customEnd: string;
     eventType: DashboardEventType;
-    country: string;
+    countries: string[];
 }
 
 export interface FeedEventRecord {
@@ -67,7 +68,7 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             title_fa: typeof strike.title_fa === "string" ? strike.title_fa : null,
             lat: typeof strike.lat === "number" ? strike.lat : null,
             lng: typeof strike.lng === "number" ? strike.lng : null,
-            country: typeof strike.country === "string" ? strike.country : null,
+            country: canonicalizeCountryName(typeof strike.country === "string" ? strike.country : null),
             location: typeof strike.locationName === "string" ? strike.locationName : null,
             side: typeof strike.side === "string" && ["iran", "us", "us-israel", "ir"].includes(strike.side) ? strike.side : undefined,
             lang: typeof strike.lang === "string" ? strike.lang : "en",
@@ -91,7 +92,7 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             timestamp: parseToIso(typeof item.date === "string" ? item.date : undefined),
             created_at: new Date().toISOString(),
             summary: typeof item.description === "string" ? item.description : null,
-            country: typeof item.country === "string" ? item.country : null,
+            country: canonicalizeCountryName(typeof item.country === "string" ? item.country : null),
             location: typeof item.locationName === "string"
                 ? item.locationName
                 : typeof item.location === "string"
@@ -167,7 +168,7 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
         if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
-        if (filters.country !== "all" && event.country !== filters.country) return false;
+        if (filters.countries.length > 0 && (!event.country || !filters.countries.includes(event.country))) return false;
         return true;
     });
 }

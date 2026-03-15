@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Activity, Coffee, Info } from "lucide-react";
+import { Coffee, Info } from "lucide-react";
 
 const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/mahjoor";
 
@@ -8,9 +8,9 @@ export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
         <header className="sticky top-0 z-50 w-full border-b border-border-default bg-background/80 backdrop-blur">
             <div className="mx-auto flex min-h-14 max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 lg:px-6">
                 <div className="flex items-center gap-2">
-                    <Activity className="h-5 w-5 text-status-danger" />
-                    <span className="font-bold tracking-tight text-primary">
-                        Iran Situation Tracker
+                    <img src="/OpenIran.png" alt="OpenIran Logo" className="h-10 w-10 object-contain" />
+                    <span className="font-bold tracking-tight text-primary px-1">
+                        OpenIran
                     </span>
                 </div>
                 <nav className="flex flex-wrap items-center gap-2 text-sm">

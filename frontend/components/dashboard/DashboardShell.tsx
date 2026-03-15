@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { CalendarRange, Filter, Languages } from "lucide-react";
+import { CalendarRange, Languages } from "lucide-react";
 import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
 import { FlightWidget } from "@/components/dashboard/FlightWidget";
+import { CountryFilter } from "@/components/dashboard/CountryFilter";
 import {
     buildFeedEvents,
     describeDashboardDateRange,
@@ -25,7 +26,7 @@ const DATE_RANGE_OPTIONS: Array<{ key: DashboardDateRange; label: string }> = [
 ];
 
 const EVENT_TYPE_OPTIONS = [
-    { key: "all", label: "All activity" },
+    { key: "all", label: "All" },
     { key: "strike", label: "Strikes" },
     { key: "news", label: "News" },
 ] as const;
@@ -40,7 +41,7 @@ export function DashboardShell() {
         customStart: "",
         customEnd: "",
         eventType: "all",
-        country: "all",
+        countries: [],
     });
 
     React.useEffect(() => {
@@ -79,9 +80,8 @@ export function DashboardShell() {
                         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
                                 <div className="inline-flex w-fit flex-wrap items-center rounded-full border border-border-default bg-surface-1 p-1">
-                                    <span className="inline-flex items-center gap-1.5 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">
+                                    <span className="inline-flex items-center px-2 py-1 text-muted">
                                         <CalendarRange className="h-3.5 w-3.5" />
-                                        Range
                                     </span>
                                     {DATE_RANGE_OPTIONS.map((option) => (
                                         <button
@@ -143,22 +143,11 @@ export function DashboardShell() {
                                     ))}
                                 </div>
 
-                                <label className="flex items-center gap-2 rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-secondary">
-                                    <Filter className="h-3.5 w-3.5 text-muted" />
-                                    <span>Country</span>
-                                    <select
-                                        value={filters.country}
-                                        onChange={(event) => setFilters((current) => ({ ...current, country: event.target.value }))}
-                                        className="bg-transparent text-primary outline-none"
-                                    >
-                                        <option value="all">All countries</option>
-                                        {countries.map((country) => (
-                                            <option key={country} value={country}>
-                                                {country}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </label>
+                                <CountryFilter
+                                    countries={countries}
+                                    value={filters.countries}
+                                    onChange={(countries) => setFilters((current) => ({ ...current, countries }))}
+                                />
 
                                 <button
                                     type="button"
