@@ -6,8 +6,19 @@ interface JsonViewerProps {
     label?: string;
 }
 
+function isLocalhostHost(hostname: string) {
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
 export function JsonViewer({ data, label = "Raw JSON" }: JsonViewerProps) {
     const [open, setOpen] = React.useState(false);
+    const [isVisible, setIsVisible] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsVisible(isLocalhostHost(window.location.hostname));
+    }, []);
+
+    if (!isVisible) return null;
 
     return (
         <div className="mt-3">
