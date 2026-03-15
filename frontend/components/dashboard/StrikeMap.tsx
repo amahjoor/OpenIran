@@ -40,7 +40,13 @@ function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
     return null;
 }
 
-export default function StrikeMap({ events }: { events: Array<{ event: DatabaseEvent; raw: Record<string, unknown> }> }) {
+export default function StrikeMap({
+    events,
+    onSelectEvent,
+}: {
+    events: Array<{ event: DatabaseEvent; raw: Record<string, unknown> }>;
+    onSelectEvent?: (eventId: string) => void;
+}) {
     const [zoom, setZoom] = useState(4);
     const mapEvents = events.filter(({ event }) => event.type === "strike" && event.lat != null && event.lng != null);
 
@@ -74,6 +80,9 @@ export default function StrikeMap({ events }: { events: Array<{ event: DatabaseE
                                 key={event.id}
                                 position={[event.lat!, event.lng!]}
                                 icon={createFlagIcon(code, computedSize)}
+                                eventHandlers={{
+                                    click: () => onSelectEvent?.(event.id),
+                                }}
                             >
                                 <Popup className="text-zinc-950 font-sans text-sm">
                                     <strong>{event.source}</strong><br />

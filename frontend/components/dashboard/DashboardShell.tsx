@@ -30,6 +30,7 @@ export function DashboardShell() {
     const [loading, setLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [globalTranslate, setGlobalTranslate] = React.useState(false);
+    const [highlightRequest, setHighlightRequest] = React.useState<{ eventId: string; requestId: number } | null>(null);
     const [filters, setFilters] = React.useState<DashboardFilters>({
         dateRange: "ytd",
         customStart: "",
@@ -111,7 +112,7 @@ export function DashboardShell() {
                             onChangeEventType={(eventType) => setFilters((current) => ({ ...current, eventType }))}
                             globalTranslate={globalTranslate}
                             onToggleTranslate={() => setGlobalTranslate((current) => !current)}
-                            rangeLabel={dateRangeLabel}
+                            highlightRequest={highlightRequest}
                         />
                     </div>
 
@@ -119,7 +120,13 @@ export function DashboardShell() {
                         <div className="flex flex-col gap-0 lg:h-full lg:min-h-0 lg:overflow-y-auto">
                             {geocodedStrikeEvents.length > 0 && (
                                 <section className="overflow-hidden border-b border-border-default lg:min-h-[240px] lg:shrink-0">
-                                    <StrikeMap events={dashboardEvents} />
+                                    <StrikeMap
+                                        events={dashboardEvents}
+                                        onSelectEvent={(eventId) => {
+                                            setFilters((current) => ({ ...current, eventType: "all" }));
+                                            setHighlightRequest({ eventId, requestId: Date.now() });
+                                        }}
+                                    />
                                 </section>
                             )}
 
