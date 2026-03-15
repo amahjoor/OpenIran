@@ -5,6 +5,7 @@ import {
   buildFeedEvents,
   canonicalizeStrikeSide,
   describeDashboardDateRange,
+  filterDashboardContextEvents,
   filterDashboardEvents,
   formatActorLabel,
   formatActorSelectionLabel,
@@ -156,6 +157,42 @@ test("filterDashboardEvents applies date, type, and country filters together", (
 
   assert.equal(filtered.length, 1);
   assert.equal(filtered[0]?.event.title, "Strike A");
+});
+
+test("filterDashboardContextEvents ignores event type while keeping other filters", () => {
+  const events = buildFeedEvents(
+    [
+      {
+        title: "Strike A",
+        source: "Source A",
+        date: "2026-03-14T10:00:00Z",
+        country: "Iran",
+      },
+    ],
+    [
+      {
+        title: "News A",
+        source: "Source B",
+        date: "2026-03-14T12:00:00Z",
+        country: "Iran",
+      },
+    ],
+  );
+
+  const filtered = filterDashboardContextEvents(
+    events,
+    {
+      dateRange: "30d",
+      customStart: "",
+      customEnd: "",
+      eventType: "strike",
+      countries: ["Iran"],
+      actors: [],
+    },
+    new Date("2026-03-14T18:00:00Z"),
+  );
+
+  assert.deepEqual(filtered.map((entry) => entry.event.title), ["News A", "Strike A"]);
 });
 
 test("filterDashboardEvents applies a rolling last 24 hours window", () => {

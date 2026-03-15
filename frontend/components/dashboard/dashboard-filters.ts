@@ -1,5 +1,5 @@
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import { canonicalizeCountryName } from "./country-flags";
+import { canonicalizeCountryName } from "./country-flags.ts";
 
 export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "all" | "strike" | "news";
@@ -287,4 +287,8 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
         return true;
     });
+}
+
+export function filterDashboardContextEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
+    return filterDashboardEvents(events, { ...filters, eventType: "all" }, now);
 }
