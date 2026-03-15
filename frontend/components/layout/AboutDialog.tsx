@@ -3,7 +3,7 @@
 import * as React from "react";
 import { X } from "lucide-react";
 
-const EXIT_DURATION_MS = 220;
+const EXIT_DURATION_MS = 280;
 
 export function AboutDialog({
     open,
@@ -18,8 +18,9 @@ export function AboutDialog({
     React.useEffect(() => {
         if (open) {
             setRendered(true);
-            const frame = window.requestAnimationFrame(() => setVisible(true));
-            return () => window.cancelAnimationFrame(frame);
+            setVisible(false);
+            const timeout = window.setTimeout(() => setVisible(true), 24);
+            return () => window.clearTimeout(timeout);
         }
 
         setVisible(false);
@@ -48,7 +49,7 @@ export function AboutDialog({
 
     return (
         <div
-            className={`fixed inset-0 z-[70] flex items-center justify-center px-4 py-8 transition-opacity duration-200 sm:px-6 ${
+            className={`fixed inset-0 z-[70] flex items-center justify-center px-4 py-8 transition-opacity duration-300 sm:px-6 ${
                 visible ? "opacity-100" : "opacity-0"
             }`}
         >
@@ -56,7 +57,7 @@ export function AboutDialog({
                 type="button"
                 aria-label="Close About dialog"
                 onClick={onClose}
-                className={`absolute inset-0 bg-background/70 backdrop-blur-sm transition-opacity duration-200 ${
+                className={`absolute inset-0 bg-background/70 backdrop-blur-sm transition-opacity duration-300 ${
                     visible ? "opacity-100" : "opacity-0"
                 }`}
             />
@@ -65,10 +66,10 @@ export function AboutDialog({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="about-dialog-title"
-                className={`relative z-10 w-full max-w-2xl rounded-[28px] border border-border-default bg-surface-1 p-6 shadow-2xl transition-all duration-200 sm:p-8 ${
+                className={`relative z-10 w-full max-w-2xl rounded-[28px] border border-border-default bg-surface-1 p-6 shadow-2xl transition-all duration-300 will-change-transform sm:p-8 ${
                     visible
                         ? "translate-y-0 scale-100 opacity-100"
-                        : "translate-y-3 scale-[0.985] opacity-0"
+                        : "translate-y-6 scale-[0.96] opacity-0"
                 }`}
             >
                 <div className="flex items-start justify-between gap-4">
