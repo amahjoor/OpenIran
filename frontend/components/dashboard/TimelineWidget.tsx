@@ -56,7 +56,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     if (loading) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <DashboardSectionHeader title="Escalation Timeline" className="pb-2" />
+                <DashboardSectionHeader title="Escalation Timeline" />
                 <CardContent className="p-0">
                     <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -196,7 +196,6 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
                     </span>
                     </>
                 )}
-                className="pb-1.5"
             />
 
             <CardContent className="p-0">

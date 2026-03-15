@@ -107,7 +107,7 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <DashboardSectionHeader title="Internet Connectivity" className="pb-2" />
+                <DashboardSectionHeader title="Internet Connectivity" />
                 <CardContent className="p-0">
                     <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -220,7 +220,6 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                     </span>
                     </>
                 )}
-                className="pb-1.5"
             />
 
             <CardContent className="p-0">

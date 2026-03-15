@@ -53,7 +53,7 @@ export function FlightWidget() {
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <DashboardSectionHeader title="Airspace Status" className="pb-2" />
+                <DashboardSectionHeader title="Airspace Status" />
                 <CardContent>
                     <div className="h-32 animate-pulse rounded-xl bg-surface-2" />
                 </CardContent>
@@ -75,7 +75,6 @@ export function FlightWidget() {
                         {meta.label}
                     </span>
                 )}
-                className="pb-2"
             />
 
             <CardContent className="space-y-0 p-0">
