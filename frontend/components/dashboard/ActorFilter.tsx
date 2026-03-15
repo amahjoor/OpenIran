@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { Check, ChevronDown, Crosshair } from "lucide-react";
-import { formatActorLabel } from "./dashboard-filters";
+import {
+    formatActorLabel,
+    formatActorSelectionLabel,
+    getEffectiveActorSelection,
+    toggleActorSelection,
+} from "./dashboard-filters";
 
 export function ActorFilter({
     actors,
@@ -16,6 +21,7 @@ export function ActorFilter({
     const [open, setOpen] = React.useState(false);
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const selectedActors = value;
+    const effectiveSelectedActors = getEffectiveActorSelection(actors, selectedActors);
 
     React.useEffect(() => {
         if (!open) return;
@@ -38,11 +44,7 @@ export function ActorFilter({
         };
     }, [open]);
 
-    const triggerLabel = selectedActors.length === 0
-        ? "Actors"
-        : selectedActors.length === 1
-            ? formatActorLabel(selectedActors[0])
-            : `${selectedActors.length} actors`;
+    const triggerLabel = formatActorSelectionLabel(actors, selectedActors);
 
     return (
         <div ref={containerRef} className="relative">
@@ -56,7 +58,7 @@ export function ActorFilter({
                 }`}
             >
                 <Crosshair className="h-3.5 w-3.5 text-muted" />
-                <span className="font-medium">{triggerLabel}</span>
+                <span className="max-w-[220px] truncate font-medium">{triggerLabel}</span>
                 <ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
 
@@ -81,18 +83,13 @@ export function ActorFilter({
                             <button
                                 key={actor}
                                 type="button"
-                                onClick={() => {
-                                    const nextValue = selectedActors.includes(actor)
-                                        ? selectedActors.filter((entry) => entry !== actor)
-                                        : [...selectedActors, actor];
-                                    onChange(nextValue);
-                                }}
+                                onClick={() => onChange(toggleActorSelection(actors, selectedActors, actor))}
                                 className={`mt-1 flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
-                                    selectedActors.includes(actor) ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
+                                    effectiveSelectedActors.includes(actor) ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
                                 }`}
                             >
                                 <span>{formatActorLabel(actor)}</span>
-                                {selectedActors.includes(actor) && <Check className="h-4 w-4" />}
+                                {effectiveSelectedActors.includes(actor) && <Check className="h-4 w-4" />}
                             </button>
                         ))}
                     </div>

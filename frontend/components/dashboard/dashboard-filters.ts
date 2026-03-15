@@ -76,11 +76,32 @@ export function getAvailableActors(events: FeedEventRecord[]) {
 }
 
 export function formatActorLabel(actor: string) {
-    if (actor === "us") return "US";
-    if (actor === "us-israel") return "US-Israel";
+    if (actor === "us") return "USA";
+    if (actor === "us-israel") return "USA / Israel";
     if (actor === "iran") return "Iran";
     if (actor === "israel") return "Israel";
     return actor;
+}
+
+export function getEffectiveActorSelection(actors: string[], selectedActors: string[]) {
+    return selectedActors.length === 0 ? actors : selectedActors;
+}
+
+export function formatActorSelectionLabel(actors: string[], selectedActors: string[]) {
+    const effectiveActors = getEffectiveActorSelection(actors, selectedActors);
+    if (effectiveActors.length === 0) return "Actors";
+    return effectiveActors.map((actor) => formatActorLabel(actor)).join(" / ");
+}
+
+export function toggleActorSelection(actors: string[], selectedActors: string[], actor: string) {
+    if (!actors.includes(actor)) return selectedActors;
+    if (selectedActors.length === 0) return [actor];
+
+    const nextActors = selectedActors.includes(actor)
+        ? selectedActors.filter((entry) => entry !== actor)
+        : actors.filter((entry) => selectedActors.includes(entry) || entry === actor);
+
+    return nextActors.length === 0 || nextActors.length === actors.length ? [] : nextActors;
 }
 
 export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: Array<Record<string, unknown>>) {

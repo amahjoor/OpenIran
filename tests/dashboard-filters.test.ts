@@ -7,9 +7,12 @@ import {
   describeDashboardDateRange,
   filterDashboardEvents,
   formatActorLabel,
+  formatActorSelectionLabel,
   getAvailableActors,
   getAvailableCountries,
   getDashboardDateBounds,
+  getEffectiveActorSelection,
+  toggleActorSelection,
 } from "../frontend/components/dashboard/dashboard-filters.ts";
 import {
   canonicalizeCountryName,
@@ -317,8 +320,8 @@ test("getAvailableActors returns canonical side buckets", () => {
   );
 
   assert.deepEqual(getAvailableActors(events), ["iran", "israel", "us-israel"]);
-  assert.equal(formatActorLabel("us"), "US");
-  assert.equal(formatActorLabel("us-israel"), "US-Israel");
+  assert.equal(formatActorLabel("us"), "USA");
+  assert.equal(formatActorLabel("us-israel"), "USA / Israel");
 });
 
 test("filterDashboardEvents applies actor filters to attributed events", () => {
@@ -346,4 +349,15 @@ test("filterDashboardEvents applies actor filters to attributed events", () => {
   );
 
   assert.deepEqual(filtered.map((entry) => entry.event.title), ["Strike B"]);
+});
+
+test("actor selection helpers treat an empty selection as all actors", () => {
+  const actors = ["iran", "israel", "us"];
+
+  assert.deepEqual(getEffectiveActorSelection(actors, []), actors);
+  assert.equal(formatActorSelectionLabel(actors, []), "Iran / Israel / USA");
+  assert.deepEqual(toggleActorSelection(actors, [], "iran"), ["iran"]);
+  assert.deepEqual(toggleActorSelection(actors, ["iran"], "iran"), []);
+  assert.deepEqual(toggleActorSelection(actors, ["iran"], "israel"), ["iran", "israel"]);
+  assert.deepEqual(toggleActorSelection(actors, ["iran", "israel"], "us"), []);
 });
