@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin, Languages } from "lucide-react";
+import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
@@ -276,7 +276,6 @@ export function Feed({ events, loading, error, globalTranslate, rangeLabel }: Fe
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
                         <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rangeLabel} · {events.length} updates</p>
                     </div>
-                    <Languages className={`h-4 w-4 flex-shrink-0 ${globalTranslate ? "text-primary" : "text-faint"}`} />
                 </div>
             </div>
 
