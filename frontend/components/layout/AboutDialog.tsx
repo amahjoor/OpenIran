@@ -48,7 +48,7 @@ export function AboutDialog({
                     <div>
                         <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">About</p>
                         <h2 id="about-dialog-title" className="mt-2 text-2xl font-semibold text-primary">
-                            Iran Situation Tracker
+                            OpenIran
                         </h2>
                     </div>
                     <button
@@ -62,10 +62,16 @@ export function AboutDialog({
 
                 <div className="mt-6 space-y-4 text-sm leading-6 text-secondary">
                     <p>
-                        Iran Situation Tracker is a live monitoring surface for strike reports, news flow, connectivity, and airspace activity.
+                        OpenIran was created to consolidate information about what&apos;s happening in Iran as the war has escalated. Information coming out of the war is often fragmented, internet access is frequently blacked out for people inside the country, and coverage is often biased or unclear.
                     </p>
                     <p>
-                        This popup replaces the old inline About section so you can add longer project context here without pushing the dashboard content down the page.
+                        The project tracks a set of signals that can help make the situation easier to follow: aviation data, internet outages, strike trends, and news coverage.
+                    </p>
+                    <p>
+                        My name is Arman, and I&apos;m building and maintaining OpenIran because I have family in Iran and wanted one central source of truth for what&apos;s happening there.
+                    </p>
+                    <p>
+                        OpenIran is open source. Anyone can use it or build on top of it. Contributions are welcome, donations are appreciated, and I hope it is useful for anyone trying to stay informed.
                     </p>
                 </div>
             </div>
