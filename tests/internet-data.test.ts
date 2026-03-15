@@ -5,6 +5,7 @@ import {
   buildHourlyScoredSeries,
   buildInternetSignalState,
   getYearStartTimestamp,
+  resolveInternetQueryRange,
   scoreAgainstBaseline
 } from "../frontend/app/api/internet/internet-data.ts";
 
@@ -55,4 +56,29 @@ test("buildInternetSignalState returns hourly series and latest scores", () => {
   assert.equal(result.pingScore, 80);
   assert.deepEqual(result.bgpSeries, [{ t: 0, v: 50 }]);
   assert.deepEqual(result.pingSeries, [{ t: 0, v: 80 }]);
+});
+
+test("resolveInternetQueryRange uses requested timestamps when valid", () => {
+  const now = new Date("2026-03-14T18:00:00Z");
+  const result = resolveInternetQueryRange(
+    new URLSearchParams({ from: "1773000000", until: "1773600000" }),
+    now
+  );
+
+  assert.deepEqual(result, {
+    currentFrom: 1773000000,
+    currentUntil: Math.floor(now.getTime() / 1000)
+  });
+});
+
+test("resolveInternetQueryRange falls back to the selected year when params are missing or invalid", () => {
+  const result = resolveInternetQueryRange(
+    new URLSearchParams({ until: String(Math.floor(Date.parse("2026-02-15T12:00:00Z") / 1000)), from: "9999999999" }),
+    new Date("2026-03-14T18:00:00Z")
+  );
+
+  assert.deepEqual(result, {
+    currentFrom: Math.floor(Date.parse("2026-01-01T00:00:00Z") / 1000),
+    currentUntil: Math.floor(Date.parse("2026-02-15T12:00:00Z") / 1000)
+  });
 });

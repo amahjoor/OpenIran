@@ -15,11 +15,40 @@ export interface InternetSignalState {
     pingSeries: ScoredPoint[];
 }
 
+export interface InternetQueryRange {
+    currentFrom: number;
+    currentUntil: number;
+}
+
 const RECENT_WINDOW_SIZE = 12;
 const HOUR_IN_SECONDS = 60 * 60;
 
 export function getYearStartTimestamp(now = new Date()) {
     return Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000);
+}
+
+function parseTimestampParam(value: string | null) {
+    if (!value) return undefined;
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) return undefined;
+    return Math.floor(parsed);
+}
+
+export function resolveInternetQueryRange(searchParams: URLSearchParams, now = new Date()): InternetQueryRange {
+    const fallbackUntil = Math.floor(now.getTime() / 1000);
+    const requestedUntil = parseTimestampParam(searchParams.get("until"));
+    const currentUntil = requestedUntil === undefined ? fallbackUntil : Math.min(requestedUntil, fallbackUntil);
+    const fallbackFrom = getYearStartTimestamp(new Date(currentUntil * 1000));
+    const requestedFrom = parseTimestampParam(searchParams.get("from"));
+
+    // The dashboard omits `from` for its "All" preset so the backend keeps the
+    // IODA request bounded to the selected year instead of asking for all history.
+    const currentFrom = requestedFrom !== undefined && requestedFrom <= currentUntil
+        ? requestedFrom
+        : fallbackFrom;
+
+    return { currentFrom, currentUntil };
 }
 
 export function scoreAgainstBaseline(value: number, avgBaseline: number) {

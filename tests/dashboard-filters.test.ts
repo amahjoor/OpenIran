@@ -11,6 +11,7 @@ import {
   getAvailableActors,
   getAvailableCountries,
   getDashboardDateBounds,
+  getDashboardDateWindow,
   getEffectiveActorSelection,
   toggleActorSelection,
 } from "../frontend/components/dashboard/dashboard-filters.ts";
@@ -90,6 +91,28 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
     ),
     { startDay: "2026-03-01", endDay: "2026-03-10" },
   );
+});
+
+test("getDashboardDateWindow keeps rolling windows real-time for downstream queries", () => {
+  const window = getDashboardDateWindow(
+    { dateRange: "24h", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+    new Date("2026-03-14T18:00:00Z"),
+    "now-if-today",
+  );
+
+  assert.equal(window.startMs, Date.parse("2026-03-13T18:00:00.000Z"));
+  assert.equal(window.endMs, Date.parse("2026-03-14T18:00:00.000Z"));
+});
+
+test("getDashboardDateWindow clamps same-day presets to now when requested", () => {
+  const window = getDashboardDateWindow(
+    { dateRange: "30d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+    new Date("2026-03-14T18:00:00Z"),
+    "now-if-today",
+  );
+
+  assert.equal(window.startMs, Date.parse("2026-02-13T00:00:00.000Z"));
+  assert.equal(window.endMs, Date.parse("2026-03-14T18:00:00.000Z"));
 });
 
 test("filterDashboardEvents applies date, type, and country filters together", () => {

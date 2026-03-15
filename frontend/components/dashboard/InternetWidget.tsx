@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Activity } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { JsonViewer } from "@/components/ui/JsonViewer";
+import { getDashboardDateWindow, type DashboardDateRange } from "./dashboard-filters";
 import {
     type TooltipItem,
     Chart as ChartJS,
@@ -68,27 +69,61 @@ function formatTooltipTimestamp(timestamp: number) {
     return format(new Date(timestamp * 1000), "MMM d, yyyy 'at' h:mm a");
 }
 
-export function InternetWidget() {
+interface InternetWidgetProps {
+    dateRange: DashboardDateRange;
+    customStart: string;
+    customEnd: string;
+    rangeLabel: string;
+}
+
+export function InternetWidget({ dateRange, customStart, customEnd, rangeLabel }: InternetWidgetProps) {
     const [data, setData] = React.useState<InternetData | null>(null);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
+        let active = true;
+        setLoading(true);
+
         const fetchStatus = async () => {
             try {
-                const res = await fetch("/api/internet");
+                const { startMs, endMs } = getDashboardDateWindow(
+                    {
+                        dateRange,
+                        customStart,
+                        customEnd,
+                        eventType: "all",
+                        countries: [],
+                        actors: [],
+                    },
+                    new Date(),
+                    "now-if-today"
+                );
+                const params = new URLSearchParams({
+                    until: String(Math.floor(endMs / 1000)),
+                });
+
+                if (startMs !== null) {
+                    params.set("from", String(Math.floor(startMs / 1000)));
+                }
+
+                const res = await fetch(`/api/internet?${params.toString()}`);
                 if (!res.ok) throw new Error(`Internet fetch failed: ${res.status}`);
                 const record = await res.json();
-                if (record && !record.error) setData(record as InternetData);
+                if (active && record && !record.error) setData(record as InternetData);
             } catch (err) {
                 console.error("Error fetching internet status:", err);
             } finally {
-                setLoading(false);
+                if (active) setLoading(false);
             }
         };
+
         fetchStatus();
         const interval = setInterval(fetchStatus, 60000);
-        return () => clearInterval(interval);
-    }, []);
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, [customEnd, customStart, dateRange]);
 
     if (loading || !data) {
         return (
@@ -206,7 +241,7 @@ export function InternetWidget() {
                 {chartLabels.length > 1 && (
                     <div className="border-t border-border-default px-4 py-4">
                         <p className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                            Year to date
+                            {rangeLabel}
                             <span className="ml-2 font-normal normal-case">
                                 <span className="text-indigo-400">— BGP</span>
                                 {"  "}

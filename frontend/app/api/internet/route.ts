@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { buildInternetSignalState, getYearStartTimestamp } from "./internet-data";
+import { buildInternetSignalState, resolveInternetQueryRange } from "./internet-data";
 
 const BASELINE_FROM = 1770000000; // Feb 1 2026 — known-healthy baseline week
 const BASELINE_UNTIL = 1770500000;
 
-export async function GET() {
+export async function GET(request: Request) {
     try {
-        const currentUntil = Math.floor(Date.now() / 1000);
-        const currentFrom = getYearStartTimestamp();
+        const { searchParams } = new URL(request.url);
+        const { currentFrom, currentUntil } = resolveInternetQueryRange(searchParams);
 
         const baselineUrl = `https://api.ioda.inetintel.cc.gatech.edu/v2/signals/raw/country/IR?from=${BASELINE_FROM}&until=${BASELINE_UNTIL}&limit=3`;
         const currentUrl = `https://api.ioda.inetintel.cc.gatech.edu/v2/signals/raw/country/IR?from=${currentFrom}&until=${currentUntil}&limit=3`;

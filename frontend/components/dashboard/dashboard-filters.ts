@@ -23,6 +23,11 @@ export interface DashboardDateBounds {
     endDay: string;
 }
 
+export interface DashboardDateWindow extends DashboardDateBounds {
+    startMs: number | null;
+    endMs: number;
+}
+
 const SIDE_ALIASES: Record<string, "iran" | "us" | "israel" | "us-israel"> = {
     iran: "iran",
     ir: "iran",
@@ -211,6 +216,38 @@ export function describeDashboardDateRange(filters: DashboardFilters, bounds: Da
     return "All time";
 }
 
+function getRollingWindowHours(dateRange: DashboardDateRange) {
+    if (dateRange === "24h") return 24;
+    if (dateRange === "3d") return 24 * 3;
+    return null;
+}
+
+export function getDashboardDateWindow(
+    filters: DashboardFilters,
+    now = new Date(),
+    endMode: "inclusive-day" | "now-if-today" = "inclusive-day"
+): DashboardDateWindow {
+    const bounds = getDashboardDateBounds(filters, now);
+    const rollingWindowHours = getRollingWindowHours(filters.dateRange);
+    const todayKey = toUtcDayKey(now);
+    const startMs = rollingWindowHours !== null
+        ? now.getTime() - rollingWindowHours * 60 * 60 * 1000
+        : bounds.startDay
+            ? Date.parse(`${bounds.startDay}T00:00:00.000Z`)
+            : null;
+    const endMs = rollingWindowHours !== null
+        ? now.getTime()
+        : endMode === "now-if-today" && bounds.endDay === todayKey
+            ? now.getTime()
+            : Date.parse(`${bounds.endDay}T23:59:59.999Z`);
+
+    return {
+        ...bounds,
+        startMs,
+        endMs,
+    };
+}
+
 export function getAvailableCountries(events: FeedEventRecord[]) {
     return Array.from(
         new Set(
@@ -222,22 +259,9 @@ export function getAvailableCountries(events: FeedEventRecord[]) {
 }
 
 export function filterDashboardEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
-    const bounds = getDashboardDateBounds(filters, now);
     // Short rolling windows should behave as true hour-based windows. The
     // longer presets stay day-bounded so the feed, map, and summaries align.
-    const rollingWindowHours = filters.dateRange === "24h"
-        ? 24
-        : filters.dateRange === "3d"
-            ? 24 * 3
-            : null;
-    const startMs = rollingWindowHours !== null
-        ? now.getTime() - rollingWindowHours * 60 * 60 * 1000
-        : bounds.startDay
-            ? Date.parse(`${bounds.startDay}T00:00:00.000Z`)
-            : null;
-    const endMs = rollingWindowHours !== null
-        ? now.getTime()
-        : Date.parse(`${bounds.endDay}T23:59:59.999Z`);
+    const { startMs, endMs } = getDashboardDateWindow(filters, now);
     const selectedCountries = new Set(
         filters.countries
             .map((country) => canonicalizeCountryName(country))
