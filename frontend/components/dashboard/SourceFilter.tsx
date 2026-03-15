@@ -3,14 +3,20 @@
 import * as React from "react";
 import { Check, ChevronDown, Search } from "lucide-react";
 
+function getSourceLabel(selectedSources: string[]) {
+    if (selectedSources.length === 0) return "Sources";
+    if (selectedSources.length === 1) return selectedSources[0] ?? "Sources";
+    return `${selectedSources.length} sources`;
+}
+
 export function SourceFilter({
     sources,
     value,
     onChange,
 }: {
     sources: string[];
-    value: string;
-    onChange: (value: string) => void;
+    value: string[];
+    onChange: (value: string[]) => void;
 }) {
     const [open, setOpen] = React.useState(false);
     const [query, setQuery] = React.useState("");
@@ -60,7 +66,7 @@ export function SourceFilter({
                 }`}
             >
                 <Search className="h-3.5 w-3.5 text-muted" />
-                <span className="max-w-[132px] truncate">{value || "Source"}</span>
+                <span className="max-w-[132px] truncate">{getSourceLabel(value)}</span>
                 <ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
 
@@ -79,16 +85,13 @@ export function SourceFilter({
                     <div className="max-h-72 overflow-y-auto">
                         <button
                             type="button"
-                            onClick={() => {
-                                onChange("");
-                                setOpen(false);
-                            }}
+                            onClick={() => onChange([])}
                             className={`flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-colors ${
-                                value === "" ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
+                                value.length === 0 ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
                             }`}
                         >
                             <span>All sources</span>
-                            {value === "" ? <Check className="h-4 w-4" /> : null}
+                            {value.length === 0 ? <Check className="h-4 w-4" /> : null}
                         </button>
 
                         {visibleSources.length > 0 ? (
@@ -97,15 +100,18 @@ export function SourceFilter({
                                     key={source}
                                     type="button"
                                     onClick={() => {
-                                        onChange(source);
-                                        setOpen(false);
+                                        onChange(
+                                            value.includes(source)
+                                                ? value.filter((currentSource) => currentSource !== source)
+                                                : [...value, source]
+                                        );
                                     }}
                                     className={`mt-1 flex w-full items-center justify-between rounded-sm px-3 py-2 text-left text-sm transition-colors ${
-                                        value === source ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
+                                        value.includes(source) ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
                                     }`}
                                 >
                                     <span className="truncate">{source}</span>
-                                    {value === source ? <Check className="h-4 w-4" /> : null}
+                                    {value.includes(source) ? <Check className="h-4 w-4" /> : null}
                                 </button>
                             ))
                         ) : (

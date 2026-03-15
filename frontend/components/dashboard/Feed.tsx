@@ -255,8 +255,8 @@ interface FeedProps {
     eventType: DashboardEventType;
     onChangeEventType: (eventType: DashboardEventType) => void;
     sources: string[];
-    source: string;
-    onChangeSource: (source: string) => void;
+    selectedSources: string[];
+    onChangeSources: (sources: string[]) => void;
     globalTranslate: boolean;
     onToggleTranslate: () => void;
     highlightRequest?: { eventId: string; requestId: number } | null;
@@ -269,8 +269,8 @@ export function Feed({
     eventType,
     onChangeEventType,
     sources,
-    source,
-    onChangeSource,
+    selectedSources,
+    onChangeSources,
     globalTranslate,
     onToggleTranslate,
     highlightRequest,
@@ -354,8 +354,8 @@ export function Feed({
                         </div>
                         <SourceFilter
                             sources={sources}
-                            value={source}
-                            onChange={onChangeSource}
+                            value={selectedSources}
+                            onChange={onChangeSources}
                         />
                         <button
                             type="button"

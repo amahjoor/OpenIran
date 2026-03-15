@@ -36,7 +36,7 @@ export function DashboardShell() {
         customStart: "",
         customEnd: "",
         eventType: "all",
-        source: "",
+        sources: [],
         countries: [],
         actors: [],
     });
@@ -66,7 +66,7 @@ export function DashboardShell() {
 
     const dateBounds = getDashboardDateBounds(filters);
     const dashboardEvents = filterDashboardContextEvents(allEvents, filters);
-    const sourceScopedFeedEvents = filterDashboardEvents(allEvents, { ...filters, source: "" });
+    const sourceScopedFeedEvents = filterDashboardEvents(allEvents, { ...filters, sources: [] });
     const filteredEvents = filterDashboardEvents(allEvents, filters);
     const actors = getAvailableActors(allEvents);
     const countries = getAvailableCountries(allEvents);
@@ -113,8 +113,8 @@ export function DashboardShell() {
                             eventType={filters.eventType}
                             onChangeEventType={(eventType) => setFilters((current) => ({ ...current, eventType }))}
                             sources={sources}
-                            source={filters.source ?? ""}
-                            onChangeSource={(source) => setFilters((current) => ({ ...current, source }))}
+                            selectedSources={filters.sources ?? []}
+                            onChangeSources={(selectedSources) => setFilters((current) => ({ ...current, sources: selectedSources }))}
                             globalTranslate={globalTranslate}
                             onToggleTranslate={() => setGlobalTranslate((current) => !current)}
                             highlightRequest={highlightRequest}
@@ -128,7 +128,7 @@ export function DashboardShell() {
                                     <StrikeMap
                                         events={dashboardEvents}
                                         onSelectEvent={(eventId) => {
-                                            setFilters((current) => ({ ...current, eventType: "all", source: "" }));
+                                            setFilters((current) => ({ ...current, eventType: "all", sources: [] }));
                                             setHighlightRequest({ eventId, requestId: Date.now() });
                                         }}
                                     />

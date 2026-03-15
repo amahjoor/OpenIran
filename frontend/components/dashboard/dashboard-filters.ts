@@ -9,7 +9,7 @@ export interface DashboardFilters {
     customStart: string;
     customEnd: string;
     eventType: DashboardEventType;
-    source?: string;
+    sources?: string[];
     countries: string[];
     actors: string[];
 }
@@ -285,7 +285,11 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
             .map((actor) => canonicalizeStrikeSide(actor))
             .filter((actor): actor is CanonicalStrikeSide => actor !== undefined)
     );
-    const selectedSource = filters.source?.trim();
+    const selectedSources = new Set(
+        (filters.sources ?? [])
+            .map((source) => source.trim())
+            .filter((source) => source.length > 0)
+    );
 
     return events.filter(({ event }) => {
         const timestamp = Date.parse(event.timestamp);
@@ -295,7 +299,7 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
         if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
-        if (selectedSource && event.source !== selectedSource) return false;
+        if (selectedSources.size > 0 && !selectedSources.has(event.source)) return false;
         if (selectedCountries.size > 0 && (!normalizedCountry || !selectedCountries.has(normalizedCountry))) return false;
         if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
         return true;
@@ -303,5 +307,5 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
 }
 
 export function filterDashboardContextEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
-    return filterDashboardEvents(events, { ...filters, eventType: "all", source: "" }, now);
+    return filterDashboardEvents(events, { ...filters, eventType: "all", sources: [] }, now);
 }
