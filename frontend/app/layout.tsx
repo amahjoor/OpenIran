@@ -1,20 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+function getMetadataBase() {
+  const configuredUrl =
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    process.env.VERCEL_PROJECT_PRODUCTION_URL;
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+  if (!configuredUrl) return new URL("http://localhost:3000");
+  if (configuredUrl.startsWith("http://") || configuredUrl.startsWith("https://")) {
+    return new URL(configuredUrl);
+  }
+
+  return new URL(`https://${configuredUrl}`);
+}
 
 export const metadata: Metadata = {
   title: "OpenIran",
   description: "High-signal monitoring of the situation in Iran. Real-time tracking of news, strikes, internet status, and aviation signals.",
+  metadataBase: getMetadataBase(),
   icons: {
     icon: "/OpenIran.png",
     apple: "/OpenIran.png",
@@ -40,9 +43,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased">
         {children}
       </body>
     </html>

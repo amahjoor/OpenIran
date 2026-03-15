@@ -1,5 +1,5 @@
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import { canonicalizeCountryName } from "./country-flags.ts";
+import { canonicalizeCountryName } from "./country-flags";
 
 export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "all" | "strike" | "news";
@@ -28,7 +28,9 @@ export interface DashboardDateWindow extends DashboardDateBounds {
     endMs: number;
 }
 
-const SIDE_ALIASES: Record<string, "iran" | "us" | "israel" | "us-israel"> = {
+type CanonicalStrikeSide = "iran" | "us" | "israel" | "us-israel";
+
+const SIDE_ALIASES: Record<string, CanonicalStrikeSide> = {
     iran: "iran",
     ir: "iran",
     iranian: "iran",
@@ -75,7 +77,7 @@ export function getAvailableActors(events: FeedEventRecord[]) {
         new Set(
             events
                 .map(({ event }) => canonicalizeStrikeSide(event.side))
-                .filter((actor): actor is string => Boolean(actor))
+                .filter((actor): actor is CanonicalStrikeSide => actor !== undefined)
         )
     ).sort((left, right) => formatActorLabel(left).localeCompare(formatActorLabel(right)));
 }
@@ -270,17 +272,19 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
     const selectedActors = new Set(
         filters.actors
             .map((actor) => canonicalizeStrikeSide(actor))
-            .filter((actor): actor is string => Boolean(actor))
+            .filter((actor): actor is CanonicalStrikeSide => actor !== undefined)
     );
 
     return events.filter(({ event }) => {
         const timestamp = Date.parse(event.timestamp);
+        const normalizedCountry = canonicalizeCountryName(event.country);
+        const normalizedSide = canonicalizeStrikeSide(event.side);
         if (Number.isNaN(timestamp)) return false;
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
         if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
-        if (selectedCountries.size > 0 && (!event.country || !selectedCountries.has(canonicalizeCountryName(event.country) ?? ""))) return false;
-        if (selectedActors.size > 0 && (!event.side || !selectedActors.has(canonicalizeStrikeSide(event.side) ?? ""))) return false;
+        if (selectedCountries.size > 0 && (!normalizedCountry || !selectedCountries.has(normalizedCountry))) return false;
+        if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
         return true;
     });
 }

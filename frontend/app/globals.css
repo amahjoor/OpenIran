@@ -46,6 +46,10 @@
   /* red-500 */
   --status-info: #6366f1;
   /* indigo-500 */
+
+  /* Font stacks */
+  --font-geist-sans: "SF Pro Text", "SF Pro Display", "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-geist-mono: "SFMono-Regular", "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 /* ─── Tailwind v4 theme extension ────────────────────────────────────────── */
