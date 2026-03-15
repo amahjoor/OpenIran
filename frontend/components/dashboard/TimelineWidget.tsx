@@ -56,9 +56,12 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     if (loading) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <DashboardSectionHeader title="Escalation Timeline" />
+                <DashboardSectionHeader
+                    title="Escalation Timeline"
+                    className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
+                />
                 <CardContent className="p-0">
-                    <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
+                    <div className="mx-4 mb-2 h-[5.5rem] animate-pulse rounded-[18px] bg-surface-2/70" />
                 </CardContent>
             </Card>
         );
@@ -184,24 +187,27 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
         <Card className="rounded-none border-x-0 shadow-none">
             <DashboardSectionHeader
                 title="Escalation Timeline"
+                className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
-                    <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                        <span>News {totalNews}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-red-500" />
-                        <span>Strikes {totalStrikes}</span>
-                    </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                            <span>News {totalNews}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-red-500" />
+                            <span>Strikes {totalStrikes}</span>
+                        </span>
                     </>
                 )}
             />
 
             <CardContent className="p-0">
-                <div className="px-4 py-2.5">
-                    <div style={{ height: 88 }}>
-                        <Line data={chartData} options={chartOptions} />
+                <div className="px-4 pb-2 pt-0.5">
+                    <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
+                        <div style={{ height: 72 }}>
+                            <Line data={chartData} options={chartOptions} />
+                        </div>
                     </div>
                 </div>
             </CardContent>

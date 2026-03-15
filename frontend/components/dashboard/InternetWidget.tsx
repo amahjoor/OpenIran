@@ -107,9 +107,12 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
     if (loading || !data) {
         return (
             <Card className="rounded-none border-x-0 shadow-none">
-                <DashboardSectionHeader title="Internet Connectivity" />
+                <DashboardSectionHeader
+                    title="Internet Connectivity"
+                    className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
+                />
                 <CardContent className="p-0">
-                    <div className="mx-4 mb-3 h-24 animate-pulse rounded-xl bg-surface-2" />
+                    <div className="mx-4 mb-2 h-[5.5rem] animate-pulse rounded-[18px] bg-surface-2/70" />
                 </CardContent>
             </Card>
         );
@@ -207,30 +210,33 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
         <Card className="rounded-none border-x-0 shadow-none">
             <DashboardSectionHeader
                 title="Internet Connectivity"
+                className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
-                    <span className={`font-medium ${meta.textColor}`}>{meta.label}</span>
-                    <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                        <span>BGP {data.signals.ioda_bgp}</span>
-                    </span>
-                    <span className="inline-flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-teal-500" />
-                        <span>Ping {data.signals.ioda_ping}</span>
-                    </span>
+                        <span className={`font-medium ${meta.textColor}`}>{meta.label}</span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                            <span>BGP {data.signals.ioda_bgp}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-teal-500" />
+                            <span>Ping {data.signals.ioda_ping}</span>
+                        </span>
                     </>
                 )}
             />
 
             <CardContent className="p-0">
                 {chartLabels.length > 1 ? (
-                    <div className="px-4 py-2.5">
-                        <div style={{ height: 88 }}>
-                            <Line data={chartData} options={chartOptions} />
+                    <div className="px-4 pb-2 pt-0.5">
+                        <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
+                            <div style={{ height: 72 }}>
+                                <Line data={chartData} options={chartOptions} />
+                            </div>
                         </div>
                     </div>
                 ) : (
-                    <div className="px-4 py-2.5 text-xs text-muted">
+                    <div className="px-4 pb-2 pt-0.5 text-xs text-muted">
                         Not enough signal history yet.
                     </div>
                 )}
