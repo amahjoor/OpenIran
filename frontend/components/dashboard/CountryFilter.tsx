@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronDown, Filter } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { getCountryFlagUrl } from "./country-flags";
 
 function CountryFlag({
@@ -89,7 +89,6 @@ export function CountryFilter({
                         : "border-border-default bg-transparent text-secondary hover:border-border-strong hover:text-primary"
                 }`}
             >
-                <Filter className="h-3.5 w-3.5 text-muted" />
                 {selectedCountries.length > 0 ? <FlagStack countries={selectedCountries} /> : <FlagStack countries={countries} />}
                 <span className="font-medium">{triggerLabel}</span>
                 <ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
