@@ -257,7 +257,7 @@ export function Feed({
     const hasMore = visibleCount < events.length;
     if (loading && events.length === 0) {
         return (
-            <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
+            <div className="border-x border-b border-border-default bg-surface-1 lg:flex lg:h-full lg:flex-col lg:border-0 lg:bg-transparent">
                 <div className="border-b border-border-default px-4 py-4 sm:px-5">
                     <div className="h-6 w-32 animate-pulse rounded bg-surface-2" />
                 </div>
@@ -272,7 +272,7 @@ export function Feed({
 
     if (events.length === 0) {
         return (
-            <div className="rounded-xl border border-dashed border-border-default bg-surface-1 py-12 text-center">
+            <div className="rounded-xl border border-dashed border-border-default bg-surface-1 py-12 text-center lg:flex lg:h-full lg:items-center lg:justify-center">
                 <p className="text-muted">No events match the current filters.</p>
                 {error && <p className="mt-2 text-xs text-status-danger">{error}</p>}
             </div>
@@ -280,8 +280,8 @@ export function Feed({
     }
 
     return (
-        <div className="border-x border-b border-border-default bg-surface-1 lg:border-0 lg:bg-transparent">
-            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5">
+        <div className="border-x border-b border-border-default bg-surface-1 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-0 lg:bg-transparent">
+            <div className="border-b border-border-default bg-background/95 px-4 py-3 backdrop-blur sm:px-5 lg:shrink-0">
                 <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
@@ -322,7 +322,7 @@ export function Feed({
                 </div>
             </div>
 
-            <div className="lg:max-h-[min(58vh,720px)] lg:overflow-y-auto">
+            <div className="lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
                 <div className="overflow-hidden divide-y divide-border-default">
                     {visible.map(({ event, raw }) => (
                         <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />

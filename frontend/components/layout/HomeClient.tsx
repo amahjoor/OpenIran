@@ -9,7 +9,7 @@ export function HomeClient() {
     const [aboutOpen, setAboutOpen] = React.useState(false);
 
     return (
-        <div className="relative min-h-screen bg-background">
+        <div className="relative min-h-screen bg-background lg:h-screen lg:overflow-hidden">
             <Header onAboutOpen={() => setAboutOpen(true)} />
             <DashboardShell />
             <AboutDialog open={aboutOpen} onClose={() => setAboutOpen(false)} />

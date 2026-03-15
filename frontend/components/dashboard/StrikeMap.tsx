@@ -47,12 +47,12 @@ export default function StrikeMap({ events }: { events: Array<{ event: DatabaseE
     if (mapEvents.length === 0) return null;
 
     return (
-        <div className="relative z-0 border-b border-border-default">
+        <div className="relative z-0 border-b border-border-default lg:flex lg:h-full lg:flex-col">
             <div className="flex items-center justify-between px-4 py-3 text-sm sm:px-5">
                 <span className="font-semibold text-primary">Strike Map</span>
                 <span className="text-xs text-muted">{mapEvents.length} geocoded strikes</span>
             </div>
-            <div className="h-[250px] w-full">
+            <div className="h-[250px] w-full lg:min-h-0 lg:flex-1">
                 <MapContainer
                     center={[32.4279, 53.6880]}
                     zoom={4}

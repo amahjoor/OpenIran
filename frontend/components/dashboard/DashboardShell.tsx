@@ -71,8 +71,8 @@ export function DashboardShell() {
     );
 
     return (
-        <>
-            <div className="relative z-40 border-b border-border-default bg-background/92 backdrop-blur lg:sticky lg:top-14">
+        <div className="lg:flex lg:h-[calc(100dvh-3.5rem)] lg:flex-col lg:overflow-hidden">
+            <div className="relative z-40 border-b border-border-default bg-background/92 backdrop-blur">
                 <div className="w-full">
                     <div className="px-4 py-3 sm:px-6 lg:px-8">
                         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
@@ -98,9 +98,9 @@ export function DashboardShell() {
                 </div>
             </div>
 
-            <main className="w-full px-4 pb-10 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-0">
-                    <div className="min-w-0 space-y-0 lg:border-x lg:border-border-default lg:bg-surface-1">
+            <main className="w-full px-4 pb-10 sm:px-6 lg:min-h-0 lg:flex-1 lg:px-8 lg:pb-0">
+                <div className="grid grid-cols-1 gap-6 lg:h-full lg:grid-cols-2 lg:gap-0">
+                    <div className="min-w-0 space-y-0 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-x lg:border-border-default lg:bg-surface-1">
                         <Feed
                             events={filteredEvents}
                             loading={loading}
@@ -112,7 +112,7 @@ export function DashboardShell() {
                             rangeLabel={dateRangeLabel}
                         />
 
-                        <section className="border-t border-border-default">
+                        <section className="border-t border-border-default lg:mt-auto lg:shrink-0">
                             <TimelineWidget
                                 events={filteredEvents}
                                 dateRange={filters.dateRange}
@@ -124,15 +124,15 @@ export function DashboardShell() {
                         </section>
                     </div>
 
-                    <aside className="min-w-0 lg:border-r lg:border-border-default lg:bg-surface-1">
-                        <div className="flex flex-col gap-0 lg:sticky lg:top-[10.5rem]">
+                    <aside className="min-w-0 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-r lg:border-border-default lg:bg-surface-1">
+                        <div className="flex flex-col gap-0 lg:h-full lg:min-h-0">
                             {geocodedStrikeEvents.length > 0 && (
-                                <section className="overflow-hidden">
+                                <section className="overflow-hidden lg:min-h-[240px] lg:flex-1">
                                     <StrikeMap events={filteredEvents} />
                                 </section>
                             )}
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x sm:divide-border-default">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x sm:divide-border-default lg:shrink-0">
                                 <section className="overflow-hidden">
                                     <InternetWidget
                                         dateRange={filters.dateRange}
@@ -150,6 +150,6 @@ export function DashboardShell() {
                 </div>
 
             </main>
-        </>
+        </div>
     );
 }
