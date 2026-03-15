@@ -31,7 +31,7 @@ export function ActorFilter({
                                 type="button"
                                 aria-pressed={isSelected}
                                 onClick={() => onChange(toggleActorSelection(actors, value, actor))}
-                                className={`font-semibold transition-colors ${
+                                className={`font-normal transition-colors ${
                                     isSelected
                                         ? "text-primary"
                                         : "text-muted/55 hover:text-primary"
