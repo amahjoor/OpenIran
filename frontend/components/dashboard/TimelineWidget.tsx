@@ -1,7 +1,6 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { BarChart3 } from "lucide-react";
 import { Line } from "react-chartjs-2";
 import {
     type ChartOptions,
@@ -64,9 +63,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
         return (
             <Card className="rounded-none border-x-0 shadow-none">
                 <CardHeader className="px-4 pb-3 pt-4">
-                    <CardTitle className="flex items-center gap-2 text-base">
-                        <BarChart3 className="h-4 w-4 text-muted" /> Escalation Timeline
-                    </CardTitle>
+                    <CardTitle className="text-base">Escalation Timeline</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="mx-4 mb-4 h-36 animate-pulse rounded-xl bg-surface-2" />
@@ -194,61 +191,38 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, rangeLabel
 
     return (
         <Card className="rounded-none border-x-0 shadow-none">
-            <CardHeader className="px-4 pb-3 pt-4">
-                <CardTitle className="flex items-center gap-2 text-base">
-                    <BarChart3 className="h-4 w-4 text-muted" /> Escalation Timeline
-                </CardTitle>
+            <CardHeader className="px-4 pb-2 pt-4">
+                <CardTitle className="text-base">Escalation Timeline</CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-0 p-0">
-                <div className="flex flex-col gap-4 px-4 pb-4 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0 space-y-2">
-                        <div className="flex items-end gap-3">
-                            <span className="text-3xl font-semibold tracking-tight text-primary">{totalUpdates}</span>
-                            <span className="pb-1 text-xs uppercase tracking-[0.18em] text-muted">{rangeLabel}</span>
-                        </div>
-                        {peakBucket && peakBucket.totalCount > 0 ? (
-                            <p className="text-sm text-muted">
-                                Peak {getBucketNoun(bucketMode)}:
-                                {" "}
-                                <span className="font-semibold text-primary">{formatBucketLabel(peakBucket.day, bucketMode, dateRange)}</span>
-                                {" "}
-                                <span>with</span>
-                                {" "}
-                                <span className="font-semibold">{peakBucket.totalCount}</span>
-                                {" "}
-                                <span>updates.</span>
-                            </p>
-                        ) : (
-                            <p className="text-sm text-muted">No updates yet in this range.</p>
-                        )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 text-xs text-muted sm:justify-end">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1.5">
-                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                            <span>{totalNews} news</span>
-                        </span>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-3 py-1.5">
-                            <span className="h-2 w-2 rounded-full bg-red-500" />
-                            <span>{totalStrikes} strikes</span>
-                        </span>
-                        <span className="inline-flex items-center rounded-full bg-surface-2 px-3 py-1.5">
-                            {bucketMode === "hour" ? "Hourly" : "Daily"}
-                        </span>
-                    </div>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 pb-2 text-xs text-muted">
+                    <span className="font-medium text-primary">{rangeLabel}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-indigo-500" />
+                        <span>News {totalNews}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                        <span className="h-2 w-2 rounded-full bg-red-500" />
+                        <span>Strikes {totalStrikes}</span>
+                    </span>
+                    <span>{totalUpdates} total</span>
                 </div>
 
                 <div className="border-t border-border-default px-4 py-4">
-                    <div style={{ height: 188 }}>
+                    <div style={{ height: 160 }}>
                         <Line data={chartData} options={chartOptions} />
                     </div>
                 </div>
 
-                <div className="flex justify-between border-t border-border-default px-4 py-4 text-xs text-muted">
-                    <span>Source: Events feed</span>
-                    <span>{bucketMode === "hour" ? "Hourly resolution" : "Daily resolution"}</span>
-                </div>
+                {peakBucket && peakBucket.totalCount > 0 && (
+                    <div className="border-t border-border-default px-4 py-2 text-[11px] text-muted">
+                        Peak {getBucketNoun(bucketMode)}{" "}
+                        <span className="font-medium text-primary">{formatBucketLabel(peakBucket.day, bucketMode, dateRange)}</span>
+                        {" · "}
+                        <span>{peakBucket.totalCount} updates</span>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
