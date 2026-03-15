@@ -24,12 +24,6 @@ const StrikeMap = dynamic(() => import("./StrikeMap"), {
     loading: () => <div className="h-[320px] w-full animate-pulse bg-surface-2" />,
 });
 
-const EVENT_TYPE_OPTIONS = [
-    { key: "all", label: "All" },
-    { key: "strike", label: "Strikes" },
-    { key: "news", label: "News" },
-] as const;
-
 export function DashboardShell() {
     const [allEvents, setAllEvents] = React.useState<ReturnType<typeof buildFeedEvents>>([]);
     const [loading, setLoading] = React.useState(true);
@@ -85,23 +79,6 @@ export function DashboardShell() {
                             <div className="flex flex-wrap items-center gap-2">
                                 <DateRangeFilter filters={filters} onChange={setFilters} />
 
-                                <div className="inline-flex h-9 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
-                                    {EVENT_TYPE_OPTIONS.map((option) => (
-                                        <button
-                                            key={option.key}
-                                            type="button"
-                                            onClick={() => setFilters((current) => ({ ...current, eventType: option.key }))}
-                                            className={`rounded-sm px-3 py-1.5 text-xs font-semibold transition-colors ${
-                                                filters.eventType === option.key
-                                                    ? "bg-surface-2 text-primary"
-                                                    : "text-muted hover:bg-surface-2 hover:text-primary"
-                                            }`}
-                                        >
-                                            {option.label}
-                                        </button>
-                                    ))}
-                                </div>
-
                                 <CountryFilter
                                     countries={countries}
                                     value={filters.countries}
@@ -128,6 +105,8 @@ export function DashboardShell() {
                             events={filteredEvents}
                             loading={loading}
                             error={error}
+                            eventType={filters.eventType}
+                            onChangeEventType={(eventType) => setFilters((current) => ({ ...current, eventType }))}
                             globalTranslate={globalTranslate}
                             onToggleTranslate={() => setGlobalTranslate((current) => !current)}
                             rangeLabel={dateRangeLabel}
@@ -155,7 +134,12 @@ export function DashboardShell() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 sm:divide-x sm:divide-border-default">
                                 <section className="overflow-hidden">
-                                    <InternetWidget />
+                                    <InternetWidget
+                                        dateRange={filters.dateRange}
+                                        customStart={filters.customStart}
+                                        customEnd={filters.customEnd}
+                                        rangeLabel={dateRangeLabel}
+                                    />
                                 </section>
                                 <section className="overflow-hidden">
                                     <FlightWidget />

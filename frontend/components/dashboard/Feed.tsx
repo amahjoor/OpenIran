@@ -6,9 +6,14 @@ import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, Languages, MapPin } 
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import type { FeedEventRecord } from "./dashboard-filters";
+import type { DashboardEventType, FeedEventRecord } from "./dashboard-filters";
 
 const PAGE_SIZE = 50;
+const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
+    { key: "all", label: "All" },
+    { key: "strike", label: "Strikes" },
+    { key: "news", label: "News" },
+];
 
 function stripHtml(html: string): string {
     return html.replace(/<[^>]*>/g, "").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&nbsp;/g, " ").trim();
@@ -225,12 +230,23 @@ interface FeedProps {
     events: FeedEventRecord[];
     loading: boolean;
     error: string | null;
+    eventType: DashboardEventType;
+    onChangeEventType: (eventType: DashboardEventType) => void;
     globalTranslate: boolean;
     onToggleTranslate: () => void;
     rangeLabel: string;
 }
 
-export function Feed({ events, loading, error, globalTranslate, onToggleTranslate, rangeLabel }: FeedProps) {
+export function Feed({
+    events,
+    loading,
+    error,
+    eventType,
+    onChangeEventType,
+    globalTranslate,
+    onToggleTranslate,
+    rangeLabel,
+}: FeedProps) {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
 
     React.useEffect(() => {
@@ -271,20 +287,38 @@ export function Feed({ events, loading, error, globalTranslate, onToggleTranslat
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
                         <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rangeLabel} · {events.length} updates</p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={onToggleTranslate}
-                        aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
-                        aria-pressed={globalTranslate}
-                        title={globalTranslate ? "Disable translation" : "Enable translation"}
-                        className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
-                            globalTranslate
-                                ? "border-border-strong bg-surface-2 text-primary"
-                                : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
-                        }`}
-                    >
-                        <Languages className="h-4 w-4" />
-                    </button>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                        <div className="inline-flex h-8 w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
+                            {EVENT_TYPE_OPTIONS.map((option) => (
+                                <button
+                                    key={option.key}
+                                    type="button"
+                                    onClick={() => onChangeEventType(option.key)}
+                                    className={`rounded-sm px-2.5 py-1 text-xs font-semibold transition-colors ${
+                                        eventType === option.key
+                                            ? "bg-surface-2 text-primary"
+                                            : "text-muted hover:bg-surface-2 hover:text-primary"
+                                    }`}
+                                >
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onToggleTranslate}
+                            aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
+                            aria-pressed={globalTranslate}
+                            title={globalTranslate ? "Disable translation" : "Enable translation"}
+                            className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
+                                globalTranslate
+                                    ? "border-border-strong bg-surface-2 text-primary"
+                                    : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
+                            }`}
+                        >
+                            <Languages className="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
