@@ -7,24 +7,15 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import { ADSB_URL, OPENSKY_URL } from "./flight-links";
+import type { FlightSnapshot } from "@/app/api/flights/flight-data";
 
-interface Arrival {
-    callsign: string;
-    estDepartureAirport: string;
-    lastSeen: number;
-}
-
-interface FlightData {
-    overall_status: "normal" | "reduced" | "suspended";
-    aircraft_in_airspace: number;
-    airports: Array<{ icao: string; name: string; recent_arrivals: Arrival[] }>;
-    fetched_at: string;
-}
+type FlightData = FlightSnapshot;
 
 const STATUS_META = {
     normal: { label: "Normal", dotColor: "bg-status-ok", textColor: "text-status-ok" },
     reduced: { label: "Reduced", dotColor: "bg-status-warn", textColor: "text-status-warn" },
     suspended: { label: "Suspended", dotColor: "bg-status-danger", textColor: "text-status-danger" },
+    unavailable: { label: "Unavailable", dotColor: "bg-muted", textColor: "text-muted" },
 };
 
 function PingingDot({ color }: { color: string }) {
@@ -74,16 +65,7 @@ export function FlightWidget() {
     }
 
     const count = data.aircraft_in_airspace ?? 0;
-
-    // Derive status from count if overall_status is missing
-    const derivedStatus: "normal" | "reduced" | "suspended" =
-        data.overall_status === "suspended" || (count === 0)
-            ? "suspended"
-            : data.overall_status === "reduced" || count < 5
-                ? "reduced"
-                : "normal";
-
-    const meta = STATUS_META[derivedStatus];
+    const meta = STATUS_META[data.overall_status];
     const arrivals = data.airports?.[0]?.recent_arrivals ?? [];
 
     return (
@@ -101,10 +83,16 @@ export function FlightWidget() {
 
             <CardContent className="space-y-0 p-0">
                 <div className="px-4 pb-4">
-                    <p className="text-primary">
-                        <span className="text-3xl font-bold tabular-nums">{count}</span>
-                        <span className="ml-1.5 text-sm text-muted">aircraft over Iran right now</span>
-                    </p>
+                    {data.overall_status === "unavailable" ? (
+                        <p className="text-sm text-muted">
+                            OpenSky is temporarily unavailable, so live airspace counts are not updating.
+                        </p>
+                    ) : (
+                        <p className="text-primary">
+                            <span className="text-3xl font-bold tabular-nums">{count}</span>
+                            <span className="ml-1.5 text-sm text-muted">aircraft over Iran right now</span>
+                        </p>
+                    )}
                 </div>
 
                 {/* Live map links */}
@@ -152,7 +140,7 @@ export function FlightWidget() {
                 </div>
 
                 <div className="flex justify-between border-t border-border-default px-4 py-4 text-xs text-muted">
-                    <span>Source: OpenSky Network</span>
+                    <span>{data.source_error ? "Source: OpenSky unavailable" : "Source: OpenSky Network"}</span>
                     <span>Updated: {formatDistanceToNow(new Date(data.fetched_at), { addSuffix: true })}</span>
                 </div>
 
