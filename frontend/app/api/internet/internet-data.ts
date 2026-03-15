@@ -21,7 +21,7 @@ export interface InternetQueryRange {
 }
 
 const RECENT_WINDOW_SIZE = 12;
-const HOUR_IN_SECONDS = 60 * 60;
+const FIFTEEN_MINUTES_IN_SECONDS = 15 * 60;
 
 export function getYearStartTimestamp(now = new Date()) {
     return Math.floor(Date.UTC(now.getUTCFullYear(), 0, 1) / 1000);
@@ -56,7 +56,7 @@ export function scoreAgainstBaseline(value: number, avgBaseline: number) {
     return Math.round(Math.min(1, value / avgBaseline) * 100);
 }
 
-export function buildHourlyScoredSeries(
+export function buildQuarterHourScoredSeries(
     values: Array<number | null>,
     currentFrom: number,
     currentUntil: number,
@@ -70,14 +70,15 @@ export function buildHourlyScoredSeries(
     for (const [index, value] of values.entries()) {
         if (value === null) continue;
 
-        // Bucket points to the top of the hour so the chart shows short outages without minute-level noise.
+        // Bucket points into 15-minute windows so the chart can surface short
+        // disruptions without turning into minute-level noise.
         const timestamp = Math.round(currentFrom + index * step);
-        const hourBucket = Math.floor(timestamp / HOUR_IN_SECONDS) * HOUR_IN_SECONDS;
-        const current = buckets.get(hourBucket) ?? { sum: 0, count: 0 };
+        const quarterHourBucket = Math.floor(timestamp / FIFTEEN_MINUTES_IN_SECONDS) * FIFTEEN_MINUTES_IN_SECONDS;
+        const current = buckets.get(quarterHourBucket) ?? { sum: 0, count: 0 };
 
         current.sum += scoreAgainstBaseline(value, avgBaseline);
         current.count += 1;
-        buckets.set(hourBucket, current);
+        buckets.set(quarterHourBucket, current);
     }
 
     return Array.from(buckets.entries())
@@ -113,7 +114,7 @@ export function buildInternetSignalState(params: {
         const recentWindow = currentVals.slice(-RECENT_WINDOW_SIZE);
         const latestValue = recentWindow.reduce((sum, value) => sum + value, 0) / recentWindow.length;
         const computedScore = scoreAgainstBaseline(latestValue, avgBaseline);
-        const scoredSeries = buildHourlyScoredSeries(series.values, currentFrom, currentUntil, avgBaseline);
+        const scoredSeries = buildQuarterHourScoredSeries(series.values, currentFrom, currentUntil, avgBaseline);
 
         if (series.datasource === "bgp") {
             bgpScore = computedScore;
