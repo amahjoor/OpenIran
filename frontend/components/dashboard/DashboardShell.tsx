@@ -71,8 +71,8 @@ export function DashboardShell() {
     return (
         <>
             <div className="relative z-40 border-b border-border-default bg-background/92 backdrop-blur lg:sticky lg:top-14">
-                <div className="mx-auto max-w-[1440px] px-0 sm:px-4 lg:px-6">
-                    <div className="px-4 py-3 sm:px-0">
+                <div className="w-full">
+                    <div className="px-4 py-3 sm:px-6 lg:px-8">
                         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
                             <div className="flex flex-wrap items-center gap-2">
                                 <DateRangeFilter filters={filters} onChange={setFilters} />
@@ -102,32 +102,34 @@ export function DashboardShell() {
                                     onChange={(countries) => setFilters((current) => ({ ...current, countries }))}
                                 />
 
-                                <ActorFilter
-                                    actors={actors}
-                                    value={filters.actors}
-                                    onChange={(actors) => setFilters((current) => ({ ...current, actors }))}
-                                />
-
                                 <button
                                     type="button"
                                     onClick={() => setGlobalTranslate((current) => !current)}
-                                    className={`inline-flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-xs font-semibold transition-colors ${
+                                    aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
+                                    aria-pressed={globalTranslate}
+                                    title={globalTranslate ? "Disable translation" : "Enable translation"}
+                                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
                                         globalTranslate
                                             ? "border-border-strong bg-surface-3 text-primary"
                                             : "border-border-default bg-surface-1 text-muted hover:border-border-strong hover:text-primary"
                                     }`}
                                 >
                                     <Languages className="h-3.5 w-3.5" />
-                                    Translate
                                 </button>
+
+                                <ActorFilter
+                                    actors={actors}
+                                    value={filters.actors}
+                                    onChange={(actors) => setFilters((current) => ({ ...current, actors }))}
+                                />
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <main className="mx-auto max-w-[1440px] px-0 pb-10 sm:px-4 lg:px-6">
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,780px)_minmax(360px,420px)] lg:justify-center lg:gap-10 xl:grid-cols-[minmax(0,820px)_minmax(380px,460px)]">
+            <main className="w-full px-4 pb-10 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.9fr)_minmax(360px,1fr)] lg:gap-0 xl:grid-cols-[minmax(0,2.1fr)_minmax(380px,1fr)]">
                     <div className="min-w-0 lg:border-x lg:border-border-default lg:bg-surface-1">
                         <Feed
                             events={filteredEvents}
