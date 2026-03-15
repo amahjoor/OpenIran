@@ -64,20 +64,20 @@ export function DateRangeFilter({
                     aria-expanded={false}
                     aria-label="Open date filters"
                     onClick={() => setOpen(true)}
-                    className="inline-flex items-center gap-2 rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs transition-colors hover:border-border-strong hover:text-primary"
+                    className="inline-flex h-9 items-center gap-2 rounded-md border border-border-default bg-transparent px-3 text-xs font-medium text-muted transition-colors hover:border-border-strong hover:text-primary"
                 >
                     <CalendarRange className="h-3.5 w-3.5" />
-                    <span className="font-medium text-primary">{selectedLabel}</span>
+                    <span className="text-primary">{selectedLabel}</span>
                 </button>
             ) : (
                 <>
-                    <div className="inline-flex w-fit flex-wrap items-center rounded-full border border-border-default bg-surface-1 p-1">
+                    <div className="inline-flex w-fit flex-wrap items-center gap-1 rounded-md border border-border-default bg-transparent p-1">
                         <button
                             type="button"
                             aria-expanded
                             aria-label="Close date filters"
                             onClick={() => setOpen(false)}
-                            className="inline-flex items-center rounded-full px-2 py-1.5 text-primary transition-colors hover:bg-surface-2"
+                            className="inline-flex h-7 items-center rounded-sm px-2 text-primary transition-colors hover:bg-surface-2"
                         >
                             <CalendarRange className="h-3.5 w-3.5" />
                         </button>
@@ -89,9 +89,9 @@ export function DateRangeFilter({
                                     onChange((current) => ({ ...current, dateRange: option.key }));
                                     if (option.key !== "custom") setOpen(false);
                                 }}
-                                className={`rounded-full px-2.5 py-1.5 text-xs font-semibold transition-colors ${
+                                className={`rounded-sm px-2.5 py-1.5 text-xs font-semibold transition-colors ${
                                     filters.dateRange === option.key
-                                        ? "bg-surface-3 text-primary"
+                                        ? "bg-surface-2 text-primary"
                                         : "text-muted hover:bg-surface-2 hover:text-primary"
                                 }`}
                             >
@@ -109,7 +109,7 @@ export function DateRangeFilter({
                                     customStart: event.target.value,
                                     dateRange: "custom",
                                 }))}
-                                className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
+                                className="h-9 rounded-md border border-border-default bg-transparent px-3 text-xs text-primary"
                             />
                             <span className="text-xs text-muted">to</span>
                             <input
@@ -120,7 +120,7 @@ export function DateRangeFilter({
                                     customEnd: event.target.value,
                                     dateRange: "custom",
                                 }))}
-                                className="rounded-full border border-border-default bg-surface-1 px-3 py-2 text-xs text-primary"
+                                className="h-9 rounded-md border border-border-default bg-transparent px-3 text-xs text-primary"
                             />
                         </div>
                     )}

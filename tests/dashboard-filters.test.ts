@@ -358,6 +358,6 @@ test("actor selection helpers treat an empty selection as all actors", () => {
   assert.equal(formatActorSelectionLabel(actors, []), "Iran / Israel / USA");
   assert.deepEqual(toggleActorSelection(actors, [], "iran"), ["iran"]);
   assert.deepEqual(toggleActorSelection(actors, ["iran"], "iran"), []);
-  assert.deepEqual(toggleActorSelection(actors, ["iran"], "israel"), ["iran", "israel"]);
-  assert.deepEqual(toggleActorSelection(actors, ["iran", "israel"], "us"), []);
+  assert.deepEqual(toggleActorSelection(actors, ["iran"], "israel"), ["israel"]);
+  assert.deepEqual(toggleActorSelection(actors, ["iran", "israel"], "us"), ["us"]);
 });

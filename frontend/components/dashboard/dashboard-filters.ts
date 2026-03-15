@@ -96,12 +96,8 @@ export function formatActorSelectionLabel(actors: string[], selectedActors: stri
 export function toggleActorSelection(actors: string[], selectedActors: string[], actor: string) {
     if (!actors.includes(actor)) return selectedActors;
     if (selectedActors.length === 0) return [actor];
-
-    const nextActors = selectedActors.includes(actor)
-        ? selectedActors.filter((entry) => entry !== actor)
-        : actors.filter((entry) => selectedActors.includes(entry) || entry === actor);
-
-    return nextActors.length === 0 || nextActors.length === actors.length ? [] : nextActors;
+    if (selectedActors.length === 1 && selectedActors[0] === actor) return [];
+    return [actor];
 }
 
 export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: Array<Record<string, unknown>>) {

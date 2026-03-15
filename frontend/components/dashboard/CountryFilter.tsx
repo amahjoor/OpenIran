@@ -83,10 +83,10 @@ export function CountryFilter({
             <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-2 text-xs transition-colors ${
+                className={`inline-flex h-9 items-center gap-2 rounded-md border px-3 text-xs font-medium transition-colors ${
                     open
                         ? "border-border-strong bg-surface-2 text-primary"
-                        : "border-border-default bg-surface-1 text-secondary hover:border-border-strong hover:text-primary"
+                        : "border-border-default bg-transparent text-secondary hover:border-border-strong hover:text-primary"
                 }`}
             >
                 <Filter className="h-3.5 w-3.5 text-muted" />
@@ -96,14 +96,14 @@ export function CountryFilter({
             </button>
 
             {open && (
-                <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[220px] rounded-3xl border border-border-default bg-surface-1 p-2 shadow-xl">
+                <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[220px] rounded-md border border-border-default bg-surface-1 p-2 shadow-xl">
                     <div className="max-h-72 overflow-y-auto">
                         <button
                             type="button"
                             onClick={() => {
                                 onChange([]);
                             }}
-                            className={`flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
+                            className={`flex w-full items-center justify-between gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors ${
                                 selectedCountries.length === 0 ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
                             }`}
                         >
@@ -124,7 +124,7 @@ export function CountryFilter({
                                         : [...selectedCountries, country];
                                     onChange(nextValue);
                                 }}
-                                className={`mt-1 flex w-full items-center justify-between gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors ${
+                                className={`mt-1 flex w-full items-center justify-between gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors ${
                                     selectedCountries.includes(country) ? "bg-surface-2 text-primary" : "text-secondary hover:bg-surface-2 hover:text-primary"
                                 }`}
                             >

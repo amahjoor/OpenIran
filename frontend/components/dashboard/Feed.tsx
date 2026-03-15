@@ -2,17 +2,11 @@
 
 import * as React from "react";
 import { formatDistanceToNow, format } from "date-fns";
-import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, MapPin } from "lucide-react";
+import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, Languages, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
 import type { DatabaseEvent } from "@/lib/supabase/types";
 import type { FeedEventRecord } from "./dashboard-filters";
-import dynamic from "next/dynamic";
-
-const StrikeMap = dynamic(() => import("./StrikeMap"), {
-    ssr: false,
-    loading: () => <div className="h-[250px] w-full bg-surface-2 animate-pulse border-b border-border-default" />
-});
 
 const PAGE_SIZE = 50;
 
@@ -232,10 +226,11 @@ interface FeedProps {
     loading: boolean;
     error: string | null;
     globalTranslate: boolean;
+    onToggleTranslate: () => void;
     rangeLabel: string;
 }
 
-export function Feed({ events, loading, error, globalTranslate, rangeLabel }: FeedProps) {
+export function Feed({ events, loading, error, globalTranslate, onToggleTranslate, rangeLabel }: FeedProps) {
     const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE);
 
     React.useEffect(() => {
@@ -276,29 +271,44 @@ export function Feed({ events, loading, error, globalTranslate, rangeLabel }: Fe
                         <h2 className="text-lg font-bold tracking-tight text-primary sm:text-xl">Live Feed</h2>
                         <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rangeLabel} · {events.length} updates</p>
                     </div>
+                    <button
+                        type="button"
+                        onClick={onToggleTranslate}
+                        aria-label={globalTranslate ? "Disable translation" : "Enable translation"}
+                        aria-pressed={globalTranslate}
+                        title={globalTranslate ? "Disable translation" : "Enable translation"}
+                        className={`inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border transition-colors ${
+                            globalTranslate
+                                ? "border-border-strong bg-surface-2 text-primary"
+                                : "border-border-default bg-transparent text-muted hover:border-border-strong hover:text-primary"
+                        }`}
+                    >
+                        <Languages className="h-4 w-4" />
+                    </button>
                 </div>
             </div>
 
-            <StrikeMap events={events} />
+            <div className="lg:max-h-[min(58vh,720px)] lg:overflow-y-auto">
+                <div className="overflow-hidden divide-y divide-border-default">
+                    {visible.map(({ event, raw }) => (
+                        <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
+                    ))}
+                </div>
 
-            <div className="overflow-hidden divide-y divide-border-default">
-                {visible.map(({ event, raw }) => (
-                    <EventCard key={event.id} event={event} raw={raw} globalTranslate={globalTranslate} />
-                ))}
+                <div className="flex justify-center border-t border-border-default px-4 py-6 text-center sm:px-5">
+                    {hasMore ? (
+                        <button
+                            onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+                            className="rounded-full border border-border-default bg-surface-1 px-4 py-2 text-sm font-medium text-secondary transition-colors hover:border-border-strong hover:bg-surface-2 hover:text-primary"
+                        >
+                            Load older events
+                        </button>
+                    ) : (
+                        <span className="text-sm text-muted">End of events</span>
+                    )}
+                </div>
             </div>
 
-            <div className="flex justify-center border-t border-border-default px-4 py-6 text-center sm:px-5">
-                {hasMore ? (
-                    <button
-                        onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
-                        className="rounded-full border border-border-default bg-surface-1 px-4 py-2 text-sm font-medium text-secondary transition-colors hover:border-border-strong hover:bg-surface-2 hover:text-primary"
-                    >
-                        Load older events
-                    </button>
-                ) : (
-                    <span className="text-sm text-muted">End of events</span>
-                )}
-            </div>
         </div>
     );
 }
