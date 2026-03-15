@@ -1,7 +1,7 @@
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import { canonicalizeCountryName } from "./country-flags";
+import { canonicalizeCountryName } from "./country-flags.ts";
 
-export type DashboardDateRange = "30d" | "90d" | "ytd" | "all" | "custom";
+export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "all" | "strike" | "news";
 
 export interface DashboardFilters {
@@ -10,6 +10,7 @@ export interface DashboardFilters {
     customEnd: string;
     eventType: DashboardEventType;
     countries: string[];
+    actors: string[];
 }
 
 export interface FeedEventRecord {
@@ -21,6 +22,19 @@ export interface DashboardDateBounds {
     startDay?: string;
     endDay: string;
 }
+
+const SIDE_ALIASES: Record<string, "iran" | "us" | "israel" | "us-israel"> = {
+    iran: "iran",
+    ir: "iran",
+    iranian: "iran",
+    us: "us",
+    usa: "us",
+    "united states": "us",
+    israel: "israel",
+    il: "israel",
+    "us-israel": "us-israel",
+    "u.s.-israel": "us-israel",
+};
 
 function toUtcDayKey(date: Date) {
     return date.toISOString().slice(0, 10);
@@ -44,6 +58,29 @@ function parseToIso(dateString?: string | null, fallbackString?: string | null) 
     }
 
     return new Date().toISOString();
+}
+
+export function canonicalizeStrikeSide(side?: string | null) {
+    if (!side) return undefined;
+    return SIDE_ALIASES[side.trim().toLowerCase()];
+}
+
+export function getAvailableActors(events: FeedEventRecord[]) {
+    return Array.from(
+        new Set(
+            events
+                .map(({ event }) => canonicalizeStrikeSide(event.side))
+                .filter((actor): actor is string => Boolean(actor))
+        )
+    ).sort((left, right) => formatActorLabel(left).localeCompare(formatActorLabel(right)));
+}
+
+export function formatActorLabel(actor: string) {
+    if (actor === "us") return "US";
+    if (actor === "us-israel") return "US-Israel";
+    if (actor === "iran") return "Iran";
+    if (actor === "israel") return "Israel";
+    return actor;
 }
 
 export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: Array<Record<string, unknown>>) {
@@ -70,7 +107,7 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             lng: typeof strike.lng === "number" ? strike.lng : null,
             country: canonicalizeCountryName(typeof strike.country === "string" ? strike.country : null),
             location: typeof strike.locationName === "string" ? strike.locationName : null,
-            side: typeof strike.side === "string" && ["iran", "us", "us-israel", "ir"].includes(strike.side) ? strike.side : undefined,
+            side: canonicalizeStrikeSide(typeof strike.side === "string" ? strike.side : null),
             lang: typeof strike.lang === "string" ? strike.lang : "en",
             tags: Array.isArray(strike.tags) ? strike.tags.filter((tag): tag is string => typeof tag === "string") : [],
             severity: strike.auto ? "warning" : "critical",
@@ -114,12 +151,20 @@ export function getDashboardDateBounds(filters: DashboardFilters, now = new Date
     const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
     const todayKey = toUtcDayKey(today);
 
-    if (filters.dateRange === "30d") {
-        return { startDay: shiftUtcDay(todayKey, -29), endDay: todayKey };
+    if (filters.dateRange === "24h") {
+        return { startDay: shiftUtcDay(todayKey, -1), endDay: todayKey };
     }
 
-    if (filters.dateRange === "90d") {
-        return { startDay: shiftUtcDay(todayKey, -89), endDay: todayKey };
+    if (filters.dateRange === "3d") {
+        return { startDay: shiftUtcDay(todayKey, -2), endDay: todayKey };
+    }
+
+    if (filters.dateRange === "7d") {
+        return { startDay: shiftUtcDay(todayKey, -6), endDay: todayKey };
+    }
+
+    if (filters.dateRange === "30d") {
+        return { startDay: shiftUtcDay(todayKey, -29), endDay: todayKey };
     }
 
     if (filters.dateRange === "ytd") {
@@ -138,8 +183,10 @@ export function getDashboardDateBounds(filters: DashboardFilters, now = new Date
 }
 
 export function describeDashboardDateRange(filters: DashboardFilters, bounds: DashboardDateBounds) {
+    if (filters.dateRange === "24h") return "Last 24 hours";
+    if (filters.dateRange === "3d") return "Last 3 days";
+    if (filters.dateRange === "7d") return "Last 7 days";
     if (filters.dateRange === "30d") return "Last 30 days";
-    if (filters.dateRange === "90d") return "Last 90 days";
     if (filters.dateRange === "ytd") return "Year to date";
     if (filters.dateRange === "custom" && bounds.startDay) {
         return `${bounds.startDay} to ${bounds.endDay}`;
@@ -151,7 +198,7 @@ export function getAvailableCountries(events: FeedEventRecord[]) {
     return Array.from(
         new Set(
             events
-                .map(({ event }) => event.country?.trim())
+                .map(({ event }) => canonicalizeCountryName(event.country))
                 .filter((country): country is string => Boolean(country))
         )
     ).sort((left, right) => left.localeCompare(right));
@@ -159,8 +206,31 @@ export function getAvailableCountries(events: FeedEventRecord[]) {
 
 export function filterDashboardEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
     const bounds = getDashboardDateBounds(filters, now);
-    const startMs = bounds.startDay ? Date.parse(`${bounds.startDay}T00:00:00.000Z`) : null;
-    const endMs = Date.parse(`${bounds.endDay}T23:59:59.999Z`);
+    // Short rolling windows should behave as true hour-based windows. The
+    // longer presets stay day-bounded so the feed, map, and summaries align.
+    const rollingWindowHours = filters.dateRange === "24h"
+        ? 24
+        : filters.dateRange === "3d"
+            ? 24 * 3
+            : null;
+    const startMs = rollingWindowHours !== null
+        ? now.getTime() - rollingWindowHours * 60 * 60 * 1000
+        : bounds.startDay
+            ? Date.parse(`${bounds.startDay}T00:00:00.000Z`)
+            : null;
+    const endMs = rollingWindowHours !== null
+        ? now.getTime()
+        : Date.parse(`${bounds.endDay}T23:59:59.999Z`);
+    const selectedCountries = new Set(
+        filters.countries
+            .map((country) => canonicalizeCountryName(country))
+            .filter((country): country is string => Boolean(country))
+    );
+    const selectedActors = new Set(
+        filters.actors
+            .map((actor) => canonicalizeStrikeSide(actor))
+            .filter((actor): actor is string => Boolean(actor))
+    );
 
     return events.filter(({ event }) => {
         const timestamp = Date.parse(event.timestamp);
@@ -168,7 +238,8 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
         if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
-        if (filters.countries.length > 0 && (!event.country || !filters.countries.includes(event.country))) return false;
+        if (selectedCountries.size > 0 && (!event.country || !selectedCountries.has(canonicalizeCountryName(event.country) ?? ""))) return false;
+        if (selectedActors.size > 0 && (!event.side || !selectedActors.has(canonicalizeStrikeSide(event.side) ?? ""))) return false;
         return true;
     });
 }

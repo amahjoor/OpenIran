@@ -6,11 +6,13 @@ import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
 import { FlightWidget } from "@/components/dashboard/FlightWidget";
+import { ActorFilter } from "@/components/dashboard/ActorFilter";
 import { CountryFilter } from "@/components/dashboard/CountryFilter";
 import {
     buildFeedEvents,
     describeDashboardDateRange,
     filterDashboardEvents,
+    getAvailableActors,
     getAvailableCountries,
     getDashboardDateBounds,
     type DashboardDateRange,
@@ -18,8 +20,10 @@ import {
 } from "./dashboard-filters";
 
 const DATE_RANGE_OPTIONS: Array<{ key: DashboardDateRange; label: string }> = [
+    { key: "24h", label: "24H" },
+    { key: "3d", label: "3D" },
+    { key: "7d", label: "7D" },
     { key: "30d", label: "30D" },
-    { key: "90d", label: "90D" },
     { key: "ytd", label: "YTD" },
     { key: "all", label: "All" },
     { key: "custom", label: "Custom" },
@@ -42,6 +46,7 @@ export function DashboardShell() {
         customEnd: "",
         eventType: "all",
         countries: [],
+        actors: [],
     });
 
     React.useEffect(() => {
@@ -69,12 +74,13 @@ export function DashboardShell() {
 
     const dateBounds = getDashboardDateBounds(filters);
     const filteredEvents = filterDashboardEvents(allEvents, filters);
+    const actors = getAvailableActors(allEvents);
     const countries = getAvailableCountries(allEvents);
     const dateRangeLabel = describeDashboardDateRange(filters, dateBounds);
 
     return (
         <>
-            <div className="border-b border-border-default bg-background/92 backdrop-blur lg:sticky lg:top-14 lg:z-40">
+            <div className="relative z-40 border-b border-border-default bg-background/92 backdrop-blur lg:sticky lg:top-14">
                 <div className="mx-auto max-w-[1440px] px-0 sm:px-4 lg:px-6">
                     <div className="px-4 py-3 sm:px-0">
                         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
@@ -149,6 +155,12 @@ export function DashboardShell() {
                                     onChange={(countries) => setFilters((current) => ({ ...current, countries }))}
                                 />
 
+                                <ActorFilter
+                                    actors={actors}
+                                    value={filters.actors}
+                                    onChange={(actors) => setFilters((current) => ({ ...current, actors }))}
+                                />
+
                                 <button
                                     type="button"
                                     onClick={() => setGlobalTranslate((current) => !current)}
@@ -179,11 +191,12 @@ export function DashboardShell() {
                         />
                     </div>
 
-                    <aside className="px-4 sm:px-0">
-                        <div className="flex flex-col gap-6 lg:sticky lg:top-[10.5rem]">
-                            <section>
+                    <aside>
+                        <div className="flex flex-col lg:sticky lg:top-[10.5rem]">
+                            <section className="border-t border-border-default">
                                 <TimelineWidget
                                     events={filteredEvents}
+                                    dateRange={filters.dateRange}
                                     startDay={dateBounds.startDay}
                                     endDay={dateBounds.endDay}
                                     rangeLabel={dateRangeLabel}
@@ -193,7 +206,7 @@ export function DashboardShell() {
                             <section>
                                 <InternetWidget />
                             </section>
-                            <section>
+                            <section className="border-b border-border-default">
                                 <FlightWidget />
                             </section>
                         </div>

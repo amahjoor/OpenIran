@@ -45,6 +45,7 @@ const COUNTRY_CANONICAL_ALIASES: Record<string, string> = {
     "عراق": "Iraq",
     azerbaijan: "Azerbaijan",
     azerbaycan: "Azerbaijan",
+    "azərbaycan": "Azerbaijan",
     "آذربایجان": "Azerbaijan",
     "اذربيجان": "Azerbaijan",
     bahrain: "Bahrain",

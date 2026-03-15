@@ -40,7 +40,7 @@ function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
     return null;
 }
 
-export default function StrikeMap({ events }: { events: Array<{ event: DatabaseEvent; raw: Record<string, any> }> }) {
+export default function StrikeMap({ events }: { events: Array<{ event: DatabaseEvent; raw: Record<string, unknown> }> }) {
     const [zoom, setZoom] = useState(4);
     const mapEvents = events.filter(({ event }) => event.type === "strike" && event.lat != null && event.lng != null);
 
@@ -83,12 +83,6 @@ export default function StrikeMap({ events }: { events: Array<{ event: DatabaseE
                         );
                     })}
                 </MapContainer>
-            </div>
-            <div className="flex flex-wrap items-center justify-center gap-4 px-4 py-3 text-[11px] font-semibold tracking-wider uppercase text-muted sm:px-5">
-                <span className="flex items-center gap-1.5"><img src="https://hatscripts.github.io/circle-flags/flags/ir.svg" className="h-4 w-4" alt="IR" /> Iran</span>
-                <span className="flex items-center gap-1.5"><img src="https://hatscripts.github.io/circle-flags/flags/us.svg" className="h-4 w-4" alt="US" /> US</span>
-                <span className="flex items-center gap-1.5"><img src="https://hatscripts.github.io/circle-flags/flags/il.svg" className="h-4 w-4" alt="IL" /> Israel</span>
-                <span className="flex items-center gap-1.5"><img src="https://hatscripts.github.io/circle-flags/flags/xx.svg" className="h-4 w-4 grayscale opacity-60" alt="Unknown" /> Other / Unknown</span>
             </div>
         </div>
     );

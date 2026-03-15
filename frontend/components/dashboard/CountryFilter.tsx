@@ -73,10 +73,10 @@ export function CountryFilter({
     }, [open]);
 
     const triggerLabel = selectedCountries.length === 0
-        ? "Countries"
+        ? "Locations"
         : selectedCountries.length === 1
             ? selectedCountries[0]
-            : `${selectedCountries.length} countries`;
+            : `${selectedCountries.length} locations`;
 
     return (
         <div ref={containerRef} className="relative">
@@ -109,7 +109,7 @@ export function CountryFilter({
                         >
                             <span className="flex items-center gap-2">
                                 <FlagStack countries={countries} />
-                                <span>All countries</span>
+                                <span>All locations</span>
                             </span>
                             {selectedCountries.length === 0 && <Check className="h-4 w-4" />}
                         </button>

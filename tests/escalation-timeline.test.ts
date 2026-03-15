@@ -30,6 +30,29 @@ test("buildEscalationBuckets groups news and strikes by UTC day", () => {
   ]);
 });
 
+test("buildEscalationBuckets can group the last 24 hours into UTC hour buckets", () => {
+  const buckets = buildEscalationBuckets({
+    strikes: [
+      { date: "2026-03-14T15:30:00Z" },
+      { scannedAt: "2026-03-14T16:45:00Z" },
+    ],
+    news: [
+      { date: "2026-03-14T15:05:00Z" },
+      { date: "2026-03-14T17:10:00Z" },
+    ],
+    days: 4,
+    endDay: "2026-03-14T17:00:00.000Z",
+    bucket: "hour",
+  });
+
+  assert.deepEqual(buckets, [
+    { day: "2026-03-14T14:00:00.000Z", newsCount: 0, strikeCount: 0, totalCount: 0 },
+    { day: "2026-03-14T15:00:00.000Z", newsCount: 1, strikeCount: 1, totalCount: 2 },
+    { day: "2026-03-14T16:00:00.000Z", newsCount: 0, strikeCount: 1, totalCount: 1 },
+    { day: "2026-03-14T17:00:00.000Z", newsCount: 1, strikeCount: 0, totalCount: 1 },
+  ]);
+});
+
 test("buildEscalationBuckets ignores invalid and out-of-range dates", () => {
   const buckets = buildEscalationBuckets({
     strikes: [
@@ -85,7 +108,22 @@ test("buildEscalationBuckets spans from the earliest event when days is omitted"
   ]);
 });
 
-test("getEscalationRangeConfig keeps daily buckets for YTD and all-time", () => {
+test("getEscalationRangeConfig maps the supported timeline presets", () => {
+  assert.deepEqual(getEscalationRangeConfig("24h", new Date("2026-03-14T18:00:00Z")), {
+    days: 24,
+    bucket: "hour",
+  });
+
+  assert.deepEqual(getEscalationRangeConfig("3d", new Date("2026-03-14T18:00:00Z")), {
+    days: 72,
+    bucket: "hour",
+  });
+
+  assert.deepEqual(getEscalationRangeConfig("7d", new Date("2026-03-14T18:00:00Z")), {
+    days: 168,
+    bucket: "hour",
+  });
+
   assert.deepEqual(
     getEscalationRangeConfig("ytd", new Date("2026-03-14T18:00:00Z")),
     { startDay: "2026-01-01", bucket: "day" }
