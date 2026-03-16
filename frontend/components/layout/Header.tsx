@@ -5,6 +5,12 @@ const NAV_ACTION_CLASS =
     "inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-muted transition-colors hover:text-primary";
 
 export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
+    const handleAboutOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        event.stopPropagation();
+        onAboutOpen();
+    };
+
     return (
         <header className="sticky top-0 z-50 w-full border-b border-border-default bg-background/80 backdrop-blur">
             <div className="flex min-h-12 w-full flex-wrap items-center justify-between gap-2 px-4 py-2 sm:px-6 lg:px-8">
@@ -17,7 +23,7 @@ export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
                 <nav className="flex flex-wrap items-center gap-2 text-[13px]">
                     <button
                         type="button"
-                        onClick={onAboutOpen}
+                        onClick={handleAboutOpen}
                         className={NAV_ACTION_CLASS}
                     >
                         About
