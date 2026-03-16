@@ -54,7 +54,7 @@ export default function StrikeMap({
     if (mapEvents.length === 0) return null;
 
     return (
-        <div className="relative z-0 border-b border-border-default lg:flex lg:h-full lg:flex-col">
+        <div className="relative z-0 lg:flex lg:h-full lg:flex-col">
             <DashboardSectionHeader
                 title="Strike Map"
                 meta={<span>{mapEvents.length} geocoded strikes</span>}

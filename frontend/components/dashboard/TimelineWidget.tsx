@@ -55,7 +55,7 @@ function getCurrentUtcHourKey() {
 export function TimelineWidget({ events, dateRange, startDay, endDay, loading }: TimelineWidgetProps) {
     if (loading) {
         return (
-            <Card className="rounded-none border-x-0 shadow-none">
+            <Card className="rounded-none border-0 shadow-none">
                 <DashboardSectionHeader
                     title="Escalation Timeline"
                     className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
@@ -184,7 +184,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     };
 
     return (
-        <Card className="rounded-none border-x-0 shadow-none">
+        <Card className="rounded-none border-0 shadow-none">
             <DashboardSectionHeader
                 title="Escalation Timeline"
                 className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"

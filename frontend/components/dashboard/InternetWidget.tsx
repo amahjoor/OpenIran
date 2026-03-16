@@ -37,6 +37,10 @@ const STATUS_META = {
     blackout: { label: "Blackout", dotColor: "bg-status-danger", textColor: "text-status-danger" },
 };
 
+function StatusDot({ color }: { color: string }) {
+    return <span className={`inline-flex h-2 w-2 rounded-full ${color}`} />;
+}
+
 function formatAxisTimestamp(timestamp: number, dateRange: DashboardDateRange) {
     const date = new Date(timestamp * 1000);
 
@@ -106,7 +110,7 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
 
     if (loading || !data) {
         return (
-            <Card className="rounded-none border-x-0 shadow-none">
+            <Card className="rounded-none border-0 shadow-none">
                 <DashboardSectionHeader
                     title="Internet Connectivity"
                     className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
@@ -207,13 +211,12 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
     };
 
     return (
-        <Card className="rounded-none border-x-0 shadow-none">
+        <Card className="rounded-none border-0 shadow-none">
             <DashboardSectionHeader
                 title="Internet Connectivity"
                 className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
-                        <span className={`font-medium ${meta.textColor}`}>{meta.label}</span>
                         <span className="inline-flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-indigo-500" />
                             <span>BGP {data.signals.ioda_bgp}</span>
@@ -223,6 +226,12 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                             <span>Ping {data.signals.ioda_ping}</span>
                         </span>
                     </>
+                )}
+                actions={(
+                    <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${meta.textColor}`}>
+                        <StatusDot color={meta.dotColor} />
+                        {meta.label}
+                    </span>
                 )}
             />
 
