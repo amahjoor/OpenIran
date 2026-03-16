@@ -5,18 +5,21 @@ import { buildFlightSnapshot } from "../frontend/app/api/flights/flight-data.ts"
 test("buildFlightSnapshot returns unavailable when upstream fails", () => {
     const snapshot = buildFlightSnapshot({
         aircraftCount: 0,
+        aircraftPositions: [],
         arrivals: [],
         fetchedAt: "2026-03-15T12:00:00.000Z",
         sourceError: "OpenSky failed: 503",
     });
 
     assert.equal(snapshot.overall_status, "unavailable");
+    assert.deepEqual(snapshot.aircraft_positions, []);
     assert.equal(snapshot.source_error, "OpenSky failed: 503");
 });
 
 test("buildFlightSnapshot derives suspended when no traffic is present", () => {
     const snapshot = buildFlightSnapshot({
         aircraftCount: 0,
+        aircraftPositions: [],
         arrivals: [],
         fetchedAt: "2026-03-15T12:00:00.000Z",
     });
@@ -27,9 +30,11 @@ test("buildFlightSnapshot derives suspended when no traffic is present", () => {
 test("buildFlightSnapshot derives reduced for very low traffic", () => {
     const snapshot = buildFlightSnapshot({
         aircraftCount: 3,
+        aircraftPositions: [{ callsign: "IR123", lat: 35.7, lng: 51.4, heading: 90, inIran: true }],
         arrivals: [],
         fetchedAt: "2026-03-15T12:00:00.000Z",
     });
 
     assert.equal(snapshot.overall_status, "reduced");
+    assert.equal(snapshot.aircraft_positions.length, 1);
 });

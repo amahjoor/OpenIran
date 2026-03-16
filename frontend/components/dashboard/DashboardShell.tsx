@@ -146,11 +146,10 @@ export function DashboardShell() {
                     <aside className="min-w-0 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-r lg:border-border-default lg:bg-surface-1">
                         <div className="flex flex-col gap-0 lg:h-full lg:min-h-0 lg:overflow-y-auto">
                             {geocodedStrikeEvents.length > 0 && (
-                                <section className="overflow-hidden border-b border-border-default lg:min-h-[240px] lg:shrink-0">
+                                <section className="overflow-hidden border-b border-border-default lg:min-h-[320px] lg:shrink-0">
                                     <StrikeMap
                                         events={dashboardEvents}
-                                        aircraftInAirspace={flightData?.aircraft_in_airspace ?? null}
-                                        airspaceStatus={flightData?.overall_status ?? null}
+                                        aircraftPositions={flightData?.aircraft_positions ?? []}
                                         airspaceLoading={flightLoading}
                                         onSelectEvent={(eventId) => {
                                             setFilters((current) => ({ ...current, eventType: "all", sources: [] }));

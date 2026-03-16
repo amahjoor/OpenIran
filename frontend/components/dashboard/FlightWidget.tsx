@@ -42,13 +42,13 @@ export function FlightWidget({ data, loading }: FlightWidgetProps) {
                                     Live airspace counts are temporarily unavailable from OpenSky.
                                 </p>
                             ) : (
-                                <p className="max-w-sm text-lg leading-7">
+                                <p className="max-w-sm text-sm leading-5">
                                     <span className="font-semibold tabular-nums text-primary">{count}</span>{" "}
-                                    <span className="font-semibold text-primary">aircraft</span>{" "}
+                                    <span className="font-medium text-primary">aircraft</span>{" "}
                                     <span className="text-muted">currently in Iranian airspace</span>
                                 </p>
                             )}
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1 text-xs text-muted">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1 text-sm text-muted">
                                 <span>Sources</span>
                                 <a
                                     href={ADSB_URL}
@@ -91,7 +91,7 @@ export function FlightWidget({ data, loading }: FlightWidgetProps) {
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted">No recent arrivals to {destinationName}.</p>
+                                <p className="text-sm leading-5 text-muted">No recent arrivals to {destinationName}.</p>
                             )}
                         </div>
                     </div>

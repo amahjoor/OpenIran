@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaf
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import type { FlightOverallStatus } from "@/app/api/flights/flight-data";
+import type { FlightAircraftPosition } from "@/app/api/flights/flight-data";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 function getSideFlagCode(side?: "iran" | "us" | "us-israel" | "ir" | string | null): string {
@@ -35,6 +35,20 @@ function createFlagIcon(countryCode: string, size: number) {
     });
 }
 
+function createAircraftIcon(heading: number | null, inIran: boolean) {
+    const rotation = heading ?? 0;
+    const color = inIran ? "#18181b" : "#71717a";
+    const opacity = inIran ? "1" : "0.7";
+
+    return L.divIcon({
+        html: `<span style="display:inline-flex;align-items:center;justify-content:center;transform:rotate(${rotation}deg);color:${color};opacity:${opacity};font-size:15px;line-height:1;">✈</span>`,
+        className: "",
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -8],
+    });
+}
+
 function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
     useMapEvents({
         zoomend: (e) => onZoom(e.target.getZoom())
@@ -44,14 +58,12 @@ function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
 
 export default function StrikeMap({
     events,
-    aircraftInAirspace,
-    airspaceStatus,
+    aircraftPositions,
     airspaceLoading,
     onSelectEvent,
 }: {
     events: Array<{ event: DatabaseEvent; raw: Record<string, unknown> }>;
-    aircraftInAirspace?: number | null;
-    airspaceStatus?: FlightOverallStatus | null;
+    aircraftPositions?: FlightAircraftPosition[];
     airspaceLoading?: boolean;
     onSelectEvent?: (eventId: string) => void;
 }) {
@@ -65,17 +77,8 @@ export default function StrikeMap({
             <DashboardSectionHeader
                 title="Strike Map"
                 meta={<span>{mapEvents.length} geocoded strikes</span>}
-                actions={
-                    airspaceLoading ? null : (
-                        <span className={`text-sm ${airspaceStatus === "unavailable" ? "text-muted" : "font-medium text-primary"}`}>
-                            {airspaceStatus === "unavailable"
-                                ? "Airspace unavailable"
-                                : `${aircraftInAirspace ?? 0} over Iran`}
-                        </span>
-                    )
-                }
             />
-            <div className="h-[250px] w-full lg:min-h-0 lg:flex-1">
+            <div className="h-[320px] w-full lg:min-h-0 lg:flex-1">
                 <MapContainer
                     center={[32.4279, 53.6880]}
                     zoom={4}
@@ -89,6 +92,18 @@ export default function StrikeMap({
                         attribution='&copy; <a href="https://carto.com/">CARTO</a>'
                     />
                     <MapEventsHandler onZoom={setZoom} />
+                    {!airspaceLoading && (aircraftPositions ?? []).map((aircraft, index) => (
+                        <Marker
+                            key={`aircraft-${aircraft.callsign}-${index}`}
+                            position={[aircraft.lat, aircraft.lng]}
+                            icon={createAircraftIcon(aircraft.heading, aircraft.inIran)}
+                        >
+                            <Popup className="text-zinc-950 font-sans text-sm">
+                                <strong>{aircraft.callsign}</strong><br />
+                                {aircraft.inIran ? "Inside Iranian airspace" : "Near Iranian airspace"}
+                            </Popup>
+                        </Marker>
+                    ))}
                     {mapEvents.map(({ event }) => {
                         const code = getSideFlagCode(event.side);
                         // Leaflet zoom doubles resolution every integer level. 

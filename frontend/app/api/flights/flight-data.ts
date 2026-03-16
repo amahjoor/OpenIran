@@ -4,11 +4,20 @@ export interface FlightArrival {
     lastSeen: number;
 }
 
+export interface FlightAircraftPosition {
+    callsign: string;
+    lat: number;
+    lng: number;
+    heading: number | null;
+    inIran: boolean;
+}
+
 export type FlightOverallStatus = "normal" | "reduced" | "suspended" | "unavailable";
 
 export interface FlightSnapshot {
     overall_status: FlightOverallStatus;
     aircraft_in_airspace: number;
+    aircraft_positions: FlightAircraftPosition[];
     airports: Array<{
         icao: string;
         name: string;
@@ -20,6 +29,7 @@ export interface FlightSnapshot {
 
 interface BuildFlightSnapshotOptions {
     aircraftCount: number;
+    aircraftPositions?: FlightAircraftPosition[];
     arrivals: FlightArrival[];
     fetchedAt?: string;
     sourceError?: string | null;
@@ -27,6 +37,7 @@ interface BuildFlightSnapshotOptions {
 
 export function buildFlightSnapshot({
     aircraftCount,
+    aircraftPositions = [],
     arrivals,
     fetchedAt = new Date().toISOString(),
     sourceError = null,
@@ -45,6 +56,7 @@ export function buildFlightSnapshot({
     return {
         overall_status: overallStatus,
         aircraft_in_airspace: aircraftCount,
+        aircraft_positions: aircraftPositions,
         airports: [{ icao: "OIIE", name: "Tehran Imam Khomeini", recent_arrivals: arrivals }],
         fetched_at: fetchedAt,
         source_error: sourceError,
