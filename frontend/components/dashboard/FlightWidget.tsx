@@ -66,24 +66,26 @@ export function FlightWidget() {
                                     </p>
                                 </div>
                             )}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-0.5 text-sm text-muted">
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1 text-xs text-muted">
+                                <span>Sources</span>
                                 <a
                                     href={ADSB_URL}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"
+                                    className="inline-flex items-center gap-1 transition-colors hover:text-primary"
                                 >
-                                    <ExternalLink className="h-3 w-3" />
                                     ADSB Exchange
+                                    <ExternalLink className="h-3 w-3" />
                                 </a>
+                                <span className="text-border-strong">/</span>
                                 <a
                                     href={OPENSKY_URL}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1.5 transition-colors hover:text-primary"
+                                    className="inline-flex items-center gap-1 transition-colors hover:text-primary"
                                 >
-                                    <ExternalLink className="h-3 w-3" />
                                     OpenSky
+                                    <ExternalLink className="h-3 w-3" />
                                 </a>
                             </div>
                         </div>
