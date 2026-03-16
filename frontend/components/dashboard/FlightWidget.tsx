@@ -7,29 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ADSB_URL, OPENSKY_URL } from "./flight-links";
 import type { FlightSnapshot } from "@/app/api/flights/flight-data";
 
-type FlightData = FlightSnapshot;
+interface FlightWidgetProps {
+    data: FlightSnapshot | null;
+    loading: boolean;
+}
 
-export function FlightWidget() {
-    const [data, setData] = React.useState<FlightData | null>(null);
-    const [loading, setLoading] = React.useState(true);
-
-    React.useEffect(() => {
-        const fetchStatus = async () => {
-            try {
-                const res = await fetch("/api/flights");
-                if (!res.ok) throw new Error(`Flights fetch failed: ${res.status}`);
-                const record = await res.json();
-                if (record && !record.error) setData(record as FlightData);
-            } catch (err) {
-                console.error("Error fetching flight status:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchStatus();
-        const interval = setInterval(fetchStatus, 60000);
-        return () => clearInterval(interval);
-    }, []);
+export function FlightWidget({ data, loading }: FlightWidgetProps) {
 
     if (loading || !data) {
         return (
@@ -59,12 +42,11 @@ export function FlightWidget() {
                                     Live airspace counts are temporarily unavailable from OpenSky.
                                 </p>
                             ) : (
-                                <div className="space-y-1">
-                                    <p className="text-[2.25rem] font-semibold tabular-nums leading-none text-primary">{count}</p>
-                                    <p className="text-sm leading-5 text-muted">
-                                        Aircraft currently in Iranian airspace
-                                    </p>
-                                </div>
+                                <p className="max-w-sm text-lg leading-7">
+                                    <span className="font-semibold tabular-nums text-primary">{count}</span>{" "}
+                                    <span className="font-semibold text-primary">aircraft</span>{" "}
+                                    <span className="text-muted">currently in Iranian airspace</span>
+                                </p>
                             )}
                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1 text-xs text-muted">
                                 <span>Sources</span>

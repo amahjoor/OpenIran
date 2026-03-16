@@ -1,10 +1,10 @@
 "use client";
 
+import * as React from "react";
 import { format, parseISO } from "date-fns";
 import { Line } from "react-chartjs-2";
 import {
     type ChartOptions,
-    type TooltipItem,
     CategoryScale,
     Chart as ChartJS,
     Filler,
@@ -36,6 +36,11 @@ function formatBucketLabel(day: string, bucket: "hour" | "day", dateRange: Dashb
     return formatDayLabel(day);
 }
 
+function formatHoverLabel(day: string, bucket: "hour" | "day") {
+    const parsed = parseISO(day);
+    return bucket === "hour" ? format(parsed, "MMM d, ha") : format(parsed, "MMM d, yyyy");
+}
+
 interface TimelineWidgetProps {
     events: FeedEventRecord[];
     dateRange: DashboardDateRange;
@@ -53,6 +58,8 @@ function getCurrentUtcHourKey() {
 }
 
 export function TimelineWidget({ events, dateRange, startDay, endDay, loading }: TimelineWidgetProps) {
+    const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
+
     if (loading) {
         return (
             <Card className="rounded-none border-0 shadow-none">
@@ -83,6 +90,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
             endDay,
             bucket: "day",
         });
+    const hoveredBucket = hoveredIndex === null ? null : buckets[hoveredIndex] ?? null;
     const totalNews = buckets.reduce((sum, bucket) => sum + bucket.newsCount, 0);
     const totalStrikes = buckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
 
@@ -123,26 +131,14 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
             intersect: false,
             mode: "index",
         },
+        onHover: (_, activeElements) => {
+            const nextIndex = activeElements[0]?.index ?? null;
+            setHoveredIndex((current) => (current === nextIndex ? current : nextIndex));
+        },
         plugins: {
             legend: { display: false },
             tooltip: {
-                callbacks: {
-                    title(items: TooltipItem<"line">[]) {
-                        const index = items[0]?.dataIndex;
-                        const bucket = index === undefined ? null : buckets[index];
-                        if (!bucket) return "";
-                        if (bucketMode === "hour") return format(parseISO(bucket.day), "MMM d, yyyy ha");
-                        return format(parseISO(bucket.day), "MMM d, yyyy");
-                    },
-                    label(context: TooltipItem<"line">) {
-                        return `${context.dataset.label}: ${context.parsed.y}`;
-                    },
-                    footer(items: TooltipItem<"line">[]) {
-                        const index = items[0]?.dataIndex;
-                        const bucket = index === undefined ? null : buckets[index];
-                        return bucket ? `Total: ${bucket.totalCount}` : "";
-                    },
-                },
+                enabled: false,
             },
         },
         scales: {
@@ -190,14 +186,16 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
                 className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
+                        {hoveredBucket ? <span>{formatHoverLabel(hoveredBucket.day, bucketMode)}</span> : null}
                         <span className="inline-flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                            <span>News {totalNews}</span>
+                            <span>News {hoveredBucket?.newsCount ?? totalNews}</span>
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-red-500" />
-                            <span>Strikes {totalStrikes}</span>
+                            <span>Strikes {hoveredBucket?.strikeCount ?? totalStrikes}</span>
                         </span>
+                        {hoveredBucket ? <span>Total {hoveredBucket.totalCount}</span> : null}
                     </>
                 )}
             />
@@ -205,7 +203,7 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
             <CardContent className="p-0">
                 <div className="px-4 pb-2 pt-0.5">
                     <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
-                        <div style={{ height: 72 }}>
+                        <div style={{ height: 72 }} onMouseLeave={() => setHoveredIndex(null)}>
                             <Line data={chartData} options={chartOptions} />
                         </div>
                     </div>

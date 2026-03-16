@@ -6,6 +6,7 @@ import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
 import { FlightWidget } from "@/components/dashboard/FlightWidget";
+import type { FlightSnapshot } from "@/app/api/flights/flight-data";
 import { ActorFilter } from "@/components/dashboard/ActorFilter";
 import { CountryFilter } from "@/components/dashboard/CountryFilter";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
@@ -27,7 +28,9 @@ const StrikeMap = dynamic(() => import("./StrikeMap"), {
 
 export function DashboardShell() {
     const [allEvents, setAllEvents] = React.useState<ReturnType<typeof buildFeedEvents>>([]);
+    const [flightData, setFlightData] = React.useState<FlightSnapshot | null>(null);
     const [loading, setLoading] = React.useState(true);
+    const [flightLoading, setFlightLoading] = React.useState(true);
     const [error, setError] = React.useState<string | null>(null);
     const [globalTranslate, setGlobalTranslate] = React.useState(false);
     const [highlightRequest, setHighlightRequest] = React.useState<{ eventId: string; requestId: number } | null>(null);
@@ -61,6 +64,25 @@ export function DashboardShell() {
 
         fetchEvents();
         const interval = setInterval(fetchEvents, 60000);
+        return () => clearInterval(interval);
+    }, []);
+
+    React.useEffect(() => {
+        const fetchFlights = async () => {
+            try {
+                const res = await fetch("/api/flights");
+                if (!res.ok) throw new Error(`Flights failed: ${res.status}`);
+                const record = await res.json();
+                if (record && !record.error) setFlightData(record as FlightSnapshot);
+            } catch (err) {
+                console.error("Error fetching flight status:", err);
+            } finally {
+                setFlightLoading(false);
+            }
+        };
+
+        fetchFlights();
+        const interval = setInterval(fetchFlights, 60000);
         return () => clearInterval(interval);
     }, []);
 
@@ -127,6 +149,9 @@ export function DashboardShell() {
                                 <section className="overflow-hidden border-b border-border-default lg:min-h-[240px] lg:shrink-0">
                                     <StrikeMap
                                         events={dashboardEvents}
+                                        aircraftInAirspace={flightData?.aircraft_in_airspace ?? null}
+                                        airspaceStatus={flightData?.overall_status ?? null}
+                                        airspaceLoading={flightLoading}
                                         onSelectEvent={(eventId) => {
                                             setFilters((current) => ({ ...current, eventType: "all", sources: [] }));
                                             setHighlightRequest({ eventId, requestId: Date.now() });
@@ -136,7 +161,7 @@ export function DashboardShell() {
                             )}
 
                             <section className="overflow-hidden border-b border-border-default lg:shrink-0">
-                                <FlightWidget />
+                                <FlightWidget data={flightData} loading={flightLoading} />
                             </section>
 
                             <section className="overflow-hidden border-b border-border-default lg:shrink-0">

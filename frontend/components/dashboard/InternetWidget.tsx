@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { getDashboardDateWindow, type DashboardDateRange } from "./dashboard-filters";
 import {
     type ChartOptions,
-    type TooltipItem,
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
@@ -62,6 +61,7 @@ interface InternetWidgetProps {
 export function InternetWidget({ dateRange, customStart, customEnd }: InternetWidgetProps) {
     const [data, setData] = React.useState<InternetData | null>(null);
     const [loading, setLoading] = React.useState(true);
+    const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
 
     React.useEffect(() => {
         let active = true;
@@ -132,6 +132,9 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
     // Keep the full-resolution timestamp for tooltips, but coarsen axis labels
     // so long-range views stay readable instead of turning into timestamp soup.
     const chartLabels = timestamps.map((timestamp) => formatAxisTimestamp(timestamp, dateRange));
+    const hoveredTimestamp = hoveredIndex === null ? null : timestamps[hoveredIndex] ?? null;
+    const hoveredBgp = hoveredTimestamp === null ? null : bgpByTimestamp.get(hoveredTimestamp) ?? null;
+    const hoveredPing = hoveredTimestamp === null ? null : pingByTimestamp.get(hoveredTimestamp) ?? null;
 
     const chartData = {
         labels: chartLabels,
@@ -169,20 +172,14 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index" as const, intersect: false },
+        onHover: (_, activeElements) => {
+            const nextIndex = activeElements[0]?.index ?? null;
+            setHoveredIndex((current) => (current === nextIndex ? current : nextIndex));
+        },
         plugins: {
             legend: { display: false },
             tooltip: {
-                callbacks: {
-                    title(items: TooltipItem<"line">[]) {
-                        const index = items[0]?.dataIndex;
-                        const timestamp = index === undefined ? undefined : timestamps[index];
-                        return timestamp ? formatTooltipTimestamp(timestamp) : "";
-                    },
-                    label(context: TooltipItem<"line">) {
-                        const value = context.parsed.y;
-                        return `${context.dataset.label}: ${value}`;
-                    },
-                },
+                enabled: false,
             },
         },
         scales: {
@@ -217,13 +214,14 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                 className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
+                        {hoveredTimestamp ? <span>{formatTooltipTimestamp(hoveredTimestamp)}</span> : null}
                         <span className="inline-flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                            <span>BGP {data.signals.ioda_bgp}</span>
+                            <span>BGP {hoveredBgp ?? data.signals.ioda_bgp}</span>
                         </span>
                         <span className="inline-flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-teal-500" />
-                            <span>Ping {data.signals.ioda_ping}</span>
+                            <span>Ping {hoveredPing ?? data.signals.ioda_ping}</span>
                         </span>
                     </>
                 )}
@@ -239,7 +237,7 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                 {chartLabels.length > 1 ? (
                     <div className="px-4 pb-2 pt-0.5">
                         <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
-                            <div style={{ height: 72 }}>
+                            <div style={{ height: 72 }} onMouseLeave={() => setHoveredIndex(null)}>
                                 <Line data={chartData} options={chartOptions} />
                             </div>
                         </div>
