@@ -1,10 +1,42 @@
+"use client";
+
 import * as React from "react";
+import { Star } from "lucide-react";
+import { formatGithubStarCount, GITHUB_REPO_URL } from "./github-stars";
 
 const BUY_ME_A_COFFEE_URL = "https://buymeacoffee.com/mahjoor";
 const NAV_ACTION_CLASS =
     "inline-flex cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-0.5 text-muted transition-colors hover:text-primary";
 
 export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
+    const [stars, setStars] = React.useState<number | null>(null);
+
+    React.useEffect(() => {
+        let active = true;
+
+        const fetchStars = async () => {
+            try {
+                const response = await fetch("/api/github-stars");
+                if (!response.ok) return;
+
+                const payload: unknown = await response.json();
+                if (!active || typeof payload !== "object" || payload === null || !("stars" in payload)) return;
+
+                const nextStars = payload.stars;
+                if (typeof nextStars === "number") {
+                    setStars(nextStars);
+                }
+            } catch {
+                // Keep the header link usable even if the count request fails.
+            }
+        };
+
+        fetchStars();
+        return () => {
+            active = false;
+        };
+    }, []);
+
     const handleAboutOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
         event.stopPropagation();
@@ -35,6 +67,17 @@ export function Header({ onAboutOpen }: { onAboutOpen: () => void }) {
                         className={NAV_ACTION_CLASS}
                     >
                         Support
+                    </a>
+                    <a
+                        href={GITHUB_REPO_URL}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label="Open GitHub repository"
+                        title="Open GitHub repository"
+                        className={NAV_ACTION_CLASS}
+                    >
+                        <Star className="h-3.5 w-3.5" />
+                        {stars !== null ? <span className="text-[12px] font-medium">{formatGithubStarCount(stars)}</span> : null}
                     </a>
                 </nav>
             </div>
