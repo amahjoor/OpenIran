@@ -9,6 +9,7 @@ import type { FlightSnapshot } from "@/app/api/flights/flight-data";
 import { ActorFilter } from "@/components/dashboard/ActorFilter";
 import { CountryFilter } from "@/components/dashboard/CountryFilter";
 import { DateRangeFilter } from "@/components/dashboard/DateRangeFilter";
+import { DashboardSectionHeader } from "@/components/dashboard/DashboardSectionHeader";
 import {
     buildFeedEvents,
     filterDashboardContextEvents,
@@ -22,7 +23,29 @@ import {
 
 const StrikeMap = dynamic(() => import("./StrikeMap"), {
     ssr: false,
-    loading: () => <div className="h-[320px] w-full animate-pulse bg-surface-2" />,
+    loading: () => (
+        <div className="border-b border-border-default">
+            <DashboardSectionHeader
+                title="Strike Map"
+                meta={<span className="inline-block h-3 w-24 animate-pulse rounded bg-surface-2/80" />}
+                actions={<span className="inline-block h-3 w-16 animate-pulse rounded bg-surface-2/80" />}
+            />
+            <div className="h-[320px] overflow-hidden lg:grid lg:grid-cols-[minmax(0,1fr)_220px]">
+                <div className="m-4 animate-pulse rounded-[18px] bg-surface-2/70 lg:mr-2" />
+                <div className="hidden border-l border-border-default lg:block">
+                    <div className="space-y-3 px-4 py-4">
+                        <div className="h-3 w-20 animate-pulse rounded bg-surface-2/80" />
+                        {[1, 2, 3].map((item) => (
+                            <div key={item} className="space-y-2">
+                                <div className="h-3 w-full animate-pulse rounded bg-surface-2/70" />
+                                <div className="h-3 w-2/3 animate-pulse rounded bg-surface-2/60" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    ),
 });
 
 export function DashboardShell() {
@@ -144,8 +167,30 @@ export function DashboardShell() {
 
                     <aside className="min-w-0 lg:flex lg:h-full lg:min-h-0 lg:flex-col lg:border-r lg:border-border-default lg:bg-surface-1">
                         <div className="flex flex-col gap-0 lg:h-full lg:min-h-0 lg:overflow-y-auto">
-                            {geocodedStrikeEvents.length > 0 && (
-                                <section className="overflow-hidden border-b border-border-default lg:min-h-[320px] lg:shrink-0">
+                            {loading ? (
+                                <section className="overflow-hidden border-b border-border-default lg:h-[372px] lg:shrink-0">
+                                    <DashboardSectionHeader
+                                        title="Strike Map"
+                                        meta={<span className="inline-block h-3 w-24 animate-pulse rounded bg-surface-2/80" />}
+                                        actions={<span className="inline-block h-3 w-16 animate-pulse rounded bg-surface-2/80" />}
+                                    />
+                                    <div className="h-[320px] overflow-hidden lg:grid lg:grid-cols-[minmax(0,1fr)_220px]">
+                                        <div className="m-4 animate-pulse rounded-[18px] bg-surface-2/70 lg:mr-2" />
+                                        <div className="hidden border-l border-border-default lg:block">
+                                            <div className="space-y-3 px-4 py-4">
+                                                <div className="h-3 w-20 animate-pulse rounded bg-surface-2/80" />
+                                                {[1, 2, 3].map((item) => (
+                                                    <div key={item} className="space-y-2">
+                                                        <div className="h-3 w-full animate-pulse rounded bg-surface-2/70" />
+                                                        <div className="h-3 w-2/3 animate-pulse rounded bg-surface-2/60" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+                            ) : geocodedStrikeEvents.length > 0 && (
+                                <section className="overflow-hidden border-b border-border-default lg:h-[372px] lg:shrink-0">
                                     <StrikeMap
                                         events={dashboardEvents}
                                         flightData={flightData}
