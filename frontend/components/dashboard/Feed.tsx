@@ -15,6 +15,7 @@ import {
 } from "./feed-navigation";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 import { SourceFilter } from "./SourceFilter";
+
 const PAGE_SIZE = 50;
 const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
     { key: "news", label: "News" },
@@ -57,6 +58,26 @@ function formatFeedTimestamp(event: DatabaseEvent) {
     };
 }
 
+function getStrikeSideFlagCode(side?: string | null) {
+    if (!side) return null;
+
+    switch (side.trim().toLowerCase()) {
+        case "iran":
+        case "ir":
+            return "ir";
+        case "us":
+        case "usa":
+            return "us";
+        case "israel":
+        case "il":
+        case "us-israel":
+        case "u.s.-israel":
+            return "il";
+        default:
+            return null;
+    }
+}
+
 function EventCard({
     event,
     raw,
@@ -71,6 +92,7 @@ function EventCard({
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
     const timestampDisplay = formatFeedTimestamp(event);
+    const strikeSideFlagCode = isStrike ? getStrikeSideFlagCode(event.side) : null;
     const cleanSummary = event.summary ? stripHtml(String(event.summary)) : null;
     const isTranslatable = Boolean(event.lang && event.lang !== "en" && event.lang !== "unknown");
     const [isTranslating, setIsTranslating] = React.useState(false);
@@ -125,8 +147,17 @@ function EventCard({
                 {/* Icon */}
                 <div className="flex-shrink-0 pt-1">
                     {isStrike ? (
-                        <div className="h-10 w-10 bg-red-500/10 text-red-500 rounded-full flex items-center justify-center">
-                            <Flame className="h-5 w-5" />
+                        <div className="h-10 w-10 overflow-hidden rounded-full bg-surface-2 flex items-center justify-center">
+                            {strikeSideFlagCode ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- tiny remote SVGs from the shared circle-flags set
+                                <img
+                                    src={`https://hatscripts.github.io/circle-flags/flags/${strikeSideFlagCode}.svg`}
+                                    alt={event.side ?? "Strike attribution"}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <Flame className="h-5 w-5 text-red-500" />
+                            )}
                         </div>
                     ) : (
                         <div className="h-10 w-10 bg-surface-2 text-muted rounded-full flex items-center justify-center">
@@ -145,14 +176,6 @@ function EventCard({
                             <span className="text-sm text-muted" title={timestampDisplay.title ?? undefined}>
                                 {timestampDisplay.label}
                             </span>
-                            {event.side && (
-                                <Badge variant={event.side === "us" ? "destructive" : "default"} className="uppercase tracking-wider text-[10px]">
-                                    {event.side}
-                                </Badge>
-                            )}
-                            {isStrike && (
-                                <Badge variant="outline" className="text-[10px] text-status-danger border-status-danger/40">Strike</Badge>
-                            )}
                         </div>
                         <div className="mt-0.5 flex-shrink-0 text-muted">
                             {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
