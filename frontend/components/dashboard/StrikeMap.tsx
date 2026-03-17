@@ -108,6 +108,7 @@ export default function StrikeMap({
     const destinationIcao = primaryAirport?.icao ?? "OIIE";
     const destinationName = primaryAirport?.name ?? "Tehran Imam Khomeini";
     const arrivals = primaryAirport?.recent_arrivals ?? [];
+    const showCompactFlightFallback = flightData?.overall_status === "unavailable" && arrivals.length === 0;
     const sortedAircraft = [...(aircraftPositions ?? [])].sort((left, right) => {
         if (left.inIran !== right.inIran) return Number(right.inIran) - Number(left.inIran);
         return left.callsign.localeCompare(right.callsign);
@@ -217,74 +218,87 @@ export default function StrikeMap({
                         {sidebarView === "flights" ? (
                             <div className="flex min-h-0 flex-1 flex-col">
                                 <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-1.5">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">Aircraft & Landings</p>
-                                        {flightData?.overall_status !== "unavailable" ? (
-                                            <span className="shrink-0 text-[10px] font-medium tabular-nums text-muted">
-                                                {count} over Iran
-                                            </span>
-                                        ) : null}
-                                    </div>
-
-                                    {flightData?.overall_status === "unavailable" ? (
-                                        <p className="px-1.5 text-[11px] leading-4 text-muted">
-                                            Live airspace counts are unavailable from OpenSky.
-                                        </p>
+                                    {showCompactFlightFallback ? (
+                                        <div className="space-y-2 px-1.5 pt-0.5">
+                                            <p className="text-[11px] leading-4 text-muted">
+                                                Live airspace counts are unavailable from OpenSky.
+                                            </p>
+                                            <p className="text-[11px] leading-4 text-muted">
+                                                No recent arrivals to {destinationName}.
+                                            </p>
+                                        </div>
                                     ) : (
-                                        <div className="space-y-0.5">
-                                            {sortedAircraft.length > 0 ? (
-                                                sortedAircraft.map((aircraft, index) => (
-                                                    <div
-                                                        key={`sidebar-aircraft-${aircraft.callsign}-${index}`}
-                                                        className="grid grid-cols-[14px_minmax(0,1fr)_46px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
-                                                    >
-                                                        <Plane className="h-3 w-3 text-muted" />
-                                                        <span className="truncate text-primary" title={aircraft.callsign}>
-                                                            {aircraft.callsign || "Unknown"}
-                                                        </span>
-                                                        <span className="truncate text-right text-[10px] text-muted">
-                                                            {aircraft.inIran ? "Over Iran" : "Nearby"}
-                                                        </span>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <p className="px-1.5 text-[11px] leading-4 text-muted">
-                                                    No tracked aircraft near Iran.
-                                                </p>
-                                            )}
-                                        </div>
-                                    )}
+                                        <>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">Aircraft & Landings</p>
+                                                {flightData?.overall_status !== "unavailable" ? (
+                                                    <span className="shrink-0 text-[10px] font-medium tabular-nums text-muted">
+                                                        {count} over Iran
+                                                    </span>
+                                                ) : null}
+                                            </div>
 
-                                    <div className="border-t border-border-default pt-2">
-                                        <p className="px-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted">
-                                            Landings
-                                        </p>
-                                        <div className="mt-0.5 space-y-0.5">
-                                            {arrivals.length > 0 ? (
-                                                arrivals.map((arrival, index) => (
-                                                    <div
-                                                        key={`sidebar-arrival-${arrival.callsign}-${index}`}
-                                                        className="grid grid-cols-[14px_minmax(0,1fr)_30px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
-                                                    >
-                                                        <PlaneLanding className="h-3 w-3 text-muted" />
-                                                        <span
-                                                            className="truncate text-primary"
-                                                            title={`${arrival.estDepartureAirport ?? "Unknown"} -> ${destinationIcao}`}
-                                                        >
-                                                            {(arrival.estDepartureAirport ?? "Unknown")} {"->"} {destinationIcao}
-                                                        </span>
-                                                        <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">
-                                                            {formatCompactAge(arrival.lastSeen * 1000)}
-                                                        </span>
-                                                    </div>
-                                                ))
-                                            ) : (
+                                            {flightData?.overall_status === "unavailable" ? (
                                                 <p className="px-1.5 text-[11px] leading-4 text-muted">
-                                                    No recent arrivals to {destinationName}.
+                                                    Live airspace counts are unavailable from OpenSky.
                                                 </p>
+                                            ) : (
+                                                <div className="space-y-0.5">
+                                                    {sortedAircraft.length > 0 ? (
+                                                        sortedAircraft.map((aircraft, index) => (
+                                                            <div
+                                                                key={`sidebar-aircraft-${aircraft.callsign}-${index}`}
+                                                                className="grid grid-cols-[14px_minmax(0,1fr)_46px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
+                                                            >
+                                                                <Plane className="h-3 w-3 text-muted" />
+                                                                <span className="truncate text-primary" title={aircraft.callsign}>
+                                                                    {aircraft.callsign || "Unknown"}
+                                                                </span>
+                                                                <span className="truncate text-right text-[10px] text-muted">
+                                                                    {aircraft.inIran ? "Over Iran" : "Nearby"}
+                                                                </span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="px-1.5 text-[11px] leading-4 text-muted">
+                                                            No tracked aircraft near Iran.
+                                                        </p>
+                                                    )}
+                                                </div>
                                             )}
-                                        </div>
-                                    </div>
+
+                                            <div className="border-t border-border-default pt-2">
+                                                <p className="px-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted">
+                                                    Landings
+                                                </p>
+                                                <div className="mt-0.5 space-y-0.5">
+                                                    {arrivals.length > 0 ? (
+                                                        arrivals.map((arrival, index) => (
+                                                            <div
+                                                                key={`sidebar-arrival-${arrival.callsign}-${index}`}
+                                                                className="grid grid-cols-[14px_minmax(0,1fr)_30px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
+                                                            >
+                                                                <PlaneLanding className="h-3 w-3 text-muted" />
+                                                                <span
+                                                                    className="truncate text-primary"
+                                                                    title={`${arrival.estDepartureAirport ?? "Unknown"} -> ${destinationIcao}`}
+                                                                >
+                                                                    {(arrival.estDepartureAirport ?? "Unknown")} {"->"} {destinationIcao}
+                                                                </span>
+                                                                <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">
+                                                                    {formatCompactAge(arrival.lastSeen * 1000)}
+                                                                </span>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <p className="px-1.5 text-[11px] leading-4 text-muted">
+                                                            No recent arrivals to {destinationName}.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
 
                                 <div className="mt-2 border-t border-border-default px-3 pt-2 text-[11px] leading-4 text-muted">
