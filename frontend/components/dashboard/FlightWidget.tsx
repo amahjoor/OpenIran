@@ -33,22 +33,24 @@ export function FlightWidget({ data, loading }: FlightWidgetProps) {
     return (
         <Card className="rounded-none border-0 bg-transparent shadow-none">
             <CardContent className="p-0">
-                <div className="px-4 py-3">
+                <div className="px-4 py-2.5">
                     <div className="grid gap-3 sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-border-default">
-                        <div className="min-w-0 space-y-3 sm:pr-4">
-                            <h4 className="mb-2 text-sm font-semibold text-primary">Flying Over Iran</h4>
+                        <div className="min-w-0 space-y-1.5 sm:pr-4">
                             {data.overall_status === "unavailable" ? (
-                                <p className="max-w-xs text-sm leading-5 text-muted">
-                                    Live airspace counts are temporarily unavailable from OpenSky.
+                                <p className="truncate text-sm leading-5">
+                                    <span className="font-semibold text-primary">Flying Over Iran</span>
+                                    <span className="text-muted"> — live airspace counts are temporarily unavailable from OpenSky.</span>
                                 </p>
                             ) : (
-                                <p className="max-w-sm text-sm leading-5">
+                                <p className="truncate text-sm leading-5">
+                                    <span className="font-semibold text-primary">Flying Over Iran</span>
+                                    <span className="text-muted"> — </span>
                                     <span className="font-semibold tabular-nums text-primary">{count}</span>{" "}
                                     <span className="font-medium text-primary">aircraft</span>{" "}
                                     <span className="text-muted">currently in Iranian airspace</span>
                                 </p>
                             )}
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 pt-1 text-sm text-muted">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
                                 <span>Sources</span>
                                 <a
                                     href={ADSB_URL}
@@ -72,26 +74,28 @@ export function FlightWidget({ data, loading }: FlightWidgetProps) {
                             </div>
                         </div>
 
-                        <div className="min-w-0 space-y-3 sm:pl-4">
-                            <h4 className="mb-2 text-sm font-semibold text-primary">Recent Arrivals</h4>
+                        <div className="min-w-0 space-y-1.5 sm:pl-4">
                             {arrivals.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-1">
                                     {arrivals.map((a, i) => (
-                                        <div key={i} className="flex items-baseline justify-between gap-3 text-sm">
-                                            <div className="min-w-0">
-                                                <p className="font-medium text-primary">
+                                        <div key={i} className="flex items-center justify-between gap-3 text-sm">
+                                            <p className="min-w-0 truncate text-sm text-primary">
+                                                <span className="font-medium">
                                                     {(a.estDepartureAirport ?? "Unknown")} {"->"} {destinationIcao}
-                                                </p>
-                                                <p className="truncate text-xs text-muted">{a.callsign || "Unknown callsign"}</p>
-                                            </div>
-                                            <span className="shrink-0 text-xs text-muted">
+                                                </span>
+                                                <span className="text-muted"> · {a.callsign || "Unknown callsign"}</span>
+                                            </p>
+                                            <span className="shrink-0 text-[11px] text-muted">
                                                 {a.lastSeen ? format(new Date(a.lastSeen * 1000), "HH:mm 'UTC'") : "Recent"}
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="text-sm leading-5 text-muted">No recent arrivals to {destinationName}.</p>
+                                <p className="truncate text-sm leading-5">
+                                    <span className="font-semibold text-primary">Recent Arrivals</span>
+                                    <span className="text-muted"> — no recent arrivals to {destinationName}.</span>
+                                </p>
                             )}
                         </div>
                     </div>

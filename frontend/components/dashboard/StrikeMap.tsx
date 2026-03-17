@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import { formatDistanceToNow } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ExternalLink, Plane, PlaneLanding } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { DatabaseEvent } from "@/lib/supabase/types";
-import type { FlightAircraftPosition } from "@/app/api/flights/flight-data";
+import type { FlightAircraftPosition, FlightSnapshot } from "@/app/api/flights/flight-data";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
+import { ADSB_URL, OPENSKY_URL } from "./flight-links";
 
 function getSideFlagCode(side?: "iran" | "us" | "us-israel" | "ir" | string | null): string {
     if (!side) return "xx";
@@ -58,13 +58,24 @@ function MapEventsHandler({ onZoom }: { onZoom: (zoom: number) => void }) {
     return null;
 }
 
+function formatCompactAge(timestamp: string | number) {
+    const parsed = typeof timestamp === "number" ? timestamp : Date.parse(timestamp);
+    const deltaMs = Date.now() - parsed;
+    if (!Number.isFinite(deltaMs)) return "";
+
+    const hours = Math.max(1, Math.round(deltaMs / 3_600_000));
+    return `${hours}h`;
+}
+
 export default function StrikeMap({
     events,
+    flightData,
     aircraftPositions,
     airspaceLoading,
     onSelectEvent,
 }: {
     events: Array<{ event: DatabaseEvent; raw: Record<string, unknown> }>;
+    flightData?: FlightSnapshot | null;
     aircraftPositions?: FlightAircraftPosition[];
     airspaceLoading?: boolean;
     onSelectEvent?: (eventId: string) => void;
@@ -72,6 +83,16 @@ export default function StrikeMap({
     const [zoom, setZoom] = useState(4);
     const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarView, setSidebarView] = useState<"flights" | "strikes">("strikes");
+    const count = flightData?.aircraft_in_airspace ?? 0;
+    const primaryAirport = flightData?.airports?.[0];
+    const destinationIcao = primaryAirport?.icao ?? "OIIE";
+    const destinationName = primaryAirport?.name ?? "Tehran Imam Khomeini";
+    const arrivals = primaryAirport?.recent_arrivals ?? [];
+    const sortedAircraft = [...(aircraftPositions ?? [])].sort((left, right) => {
+        if (left.inIran !== right.inIran) return Number(right.inIran) - Number(left.inIran);
+        return left.callsign.localeCompare(right.callsign);
+    });
     const mapEvents = events
         .filter(({ event }) => event.type === "strike" && event.lat != null && event.lng != null)
         .sort((left, right) => Date.parse(right.event.timestamp) - Date.parse(left.event.timestamp));
@@ -87,14 +108,14 @@ export default function StrikeMap({
                     <button
                         type="button"
                         onClick={() => setSidebarOpen((current) => !current)}
-                        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted transition-colors hover:text-primary"
+                        className="inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-primary"
                     >
                         {sidebarOpen ? "Hide list" : "Show list"}
                         {sidebarOpen ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
                     </button>
                 )}
             />
-            <div className={`lg:grid lg:min-h-0 lg:flex-1 ${sidebarOpen ? "lg:grid-cols-[minmax(0,1fr)_240px]" : "lg:grid-cols-1"}`}>
+            <div className={`lg:grid lg:min-h-0 lg:flex-1 ${sidebarOpen ? "lg:grid-cols-[minmax(0,1fr)_220px]" : "lg:grid-cols-1"}`}>
                 <div className="h-[320px] w-full lg:min-h-0 lg:h-full">
                     <MapContainer
                         center={[32.4279, 53.6880]}
@@ -149,32 +170,163 @@ export default function StrikeMap({
                 </div>
 
                 <div className={`${sidebarOpen ? "border-t border-border-default lg:min-h-0 lg:border-l lg:border-t-0" : "hidden"}`}>
-                    <div className="max-h-[320px] overflow-y-auto px-2 py-2">
-                        {mapEvents.map(({ event }) => {
-                            const locationLabel = event.location || event.country || "Unknown location";
-                            const rowLabel = `${locationLabel}: ${event.title}`;
-                            return (
+                    <div className="max-h-[320px] overflow-y-auto px-1.5 py-1.5">
+                        <div className="px-1.5 pb-2">
+                            <div className="inline-flex rounded-full border border-border-default bg-surface-2/50 p-0.5 text-[10px] font-medium text-muted">
                                 <button
-                                    key={`sidebar-${event.id}`}
                                     type="button"
-                                    onClick={() => {
-                                        setSelectedEventId(event.id);
-                                        onSelectEvent?.(event.id);
-                                    }}
-                                    className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-surface-2/55 ${
-                                        selectedEventId === event.id ? "bg-surface-2/70" : ""
+                                    onClick={() => setSidebarView("flights")}
+                                    className={`rounded-full px-2 py-1 transition-colors ${
+                                        sidebarView === "flights" ? "bg-background text-primary shadow-sm" : "hover:text-primary"
                                     }`}
                                 >
-                                    <span className="inline-flex h-2 w-2 shrink-0 rounded-full bg-status-danger" />
-                                    <p className="min-w-0 flex-1 truncate text-xs text-primary" title={rowLabel}>
-                                        {rowLabel}
-                                    </p>
-                                    <span className="shrink-0 text-[11px] text-muted">
-                                        {formatDistanceToNow(new Date(event.timestamp), { addSuffix: true })}
-                                    </span>
+                                    Flights
                                 </button>
-                            );
-                        })}
+                                <button
+                                    type="button"
+                                    onClick={() => setSidebarView("strikes")}
+                                    className={`rounded-full px-2 py-1 transition-colors ${
+                                        sidebarView === "strikes" ? "bg-background text-primary shadow-sm" : "hover:text-primary"
+                                    }`}
+                                >
+                                    Strikes
+                                </button>
+                            </div>
+                        </div>
+
+                        {sidebarView === "flights" ? (
+                            <div className="space-y-2 px-1.5">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-muted">Aircraft & Landings</p>
+                                    {flightData?.overall_status !== "unavailable" ? (
+                                        <span className="shrink-0 text-[10px] font-medium tabular-nums text-muted">
+                                            {count} over Iran
+                                        </span>
+                                    ) : null}
+                                </div>
+
+                                {flightData?.overall_status === "unavailable" ? (
+                                    <p className="px-1.5 text-[11px] leading-4 text-muted">
+                                        Live airspace counts are unavailable from OpenSky.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-0.5">
+                                        {sortedAircraft.length > 0 ? (
+                                            sortedAircraft.map((aircraft, index) => (
+                                                <div
+                                                    key={`sidebar-aircraft-${aircraft.callsign}-${index}`}
+                                                    className="grid grid-cols-[14px_minmax(0,1fr)_46px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
+                                                >
+                                                    <Plane className="h-3 w-3 text-muted" />
+                                                    <span className="truncate text-primary" title={aircraft.callsign}>
+                                                        {aircraft.callsign || "Unknown"}
+                                                    </span>
+                                                    <span className="truncate text-right text-[10px] text-muted">
+                                                        {aircraft.inIran ? "Over Iran" : "Nearby"}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="px-1.5 text-[11px] leading-4 text-muted">
+                                                No tracked aircraft near Iran.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="border-t border-border-default pt-2">
+                                    <p className="px-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted">
+                                        Landings
+                                    </p>
+                                    <div className="mt-0.5 space-y-0.5">
+                                        {arrivals.length > 0 ? (
+                                            arrivals.map((arrival, index) => (
+                                                <div
+                                                    key={`sidebar-arrival-${arrival.callsign}-${index}`}
+                                                    className="grid grid-cols-[14px_minmax(0,1fr)_30px] items-center gap-2 px-1.5 py-0.5 text-[11px] leading-4"
+                                                >
+                                                    <PlaneLanding className="h-3 w-3 text-muted" />
+                                                    <span
+                                                        className="truncate text-primary"
+                                                        title={`${arrival.estDepartureAirport ?? "Unknown"} -> ${destinationIcao}`}
+                                                    >
+                                                        {(arrival.estDepartureAirport ?? "Unknown")} {"->"} {destinationIcao}
+                                                    </span>
+                                                    <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">
+                                                        {formatCompactAge(arrival.lastSeen * 1000)}
+                                                    </span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="px-1.5 text-[11px] leading-4 text-muted">
+                                                No recent arrivals to {destinationName}.
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="border-t border-border-default pt-2">
+                                    <p className="px-1.5 text-[10px] font-medium uppercase tracking-[0.06em] text-muted">
+                                        Sources
+                                    </p>
+                                    <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1 px-1.5 text-[11px] leading-4 text-muted">
+                                        <a
+                                            href={ADSB_URL}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 transition-colors hover:text-primary"
+                                        >
+                                            ADSB Exchange
+                                            <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                        <span className="text-border-strong">/</span>
+                                        <a
+                                            href={OPENSKY_URL}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="inline-flex items-center gap-1 transition-colors hover:text-primary"
+                                        >
+                                            OpenSky
+                                            <ExternalLink className="h-3 w-3" />
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="px-1.5">
+                                {mapEvents.map(({ event }) => {
+                                    const locationLabel = event.location || event.country || "Unknown location";
+                                    const ageLabel = formatCompactAge(event.timestamp);
+                                    return (
+                                        <button
+                                            key={`sidebar-${event.id}`}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedEventId(event.id);
+                                                onSelectEvent?.(event.id);
+                                            }}
+                                            className={`grid w-full grid-cols-[54px_minmax(0,1fr)_30px] items-center gap-2 rounded px-1.5 py-1 text-left transition-colors hover:bg-surface-2/55 ${
+                                                selectedEventId === event.id ? "bg-surface-2/70 text-primary" : ""
+                                            }`}
+                                        >
+                                            <span className="truncate text-[10px] leading-4 text-muted" title={locationLabel}>
+                                                {locationLabel}
+                                            </span>
+                                            <div className="flex min-w-0 items-center gap-1.5">
+                                                <span className="inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-status-danger" />
+                                                <p
+                                                    className="min-w-0 truncate text-[11px] leading-4 text-primary"
+                                                    title={event.title}
+                                                >
+                                                    {event.title}
+                                                </p>
+                                            </div>
+                                            <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">{ageLabel}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

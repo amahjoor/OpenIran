@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { Feed } from "@/components/dashboard/Feed";
 import { TimelineWidget } from "@/components/dashboard/TimelineWidget";
 import { InternetWidget } from "@/components/dashboard/InternetWidget";
-import { FlightWidget } from "@/components/dashboard/FlightWidget";
 import type { FlightSnapshot } from "@/app/api/flights/flight-data";
 import { ActorFilter } from "@/components/dashboard/ActorFilter";
 import { CountryFilter } from "@/components/dashboard/CountryFilter";
@@ -149,6 +148,7 @@ export function DashboardShell() {
                                 <section className="overflow-hidden border-b border-border-default lg:min-h-[320px] lg:shrink-0">
                                     <StrikeMap
                                         events={dashboardEvents}
+                                        flightData={flightData}
                                         aircraftPositions={flightData?.aircraft_positions ?? []}
                                         airspaceLoading={flightLoading}
                                         onSelectEvent={(eventId) => {
@@ -158,11 +158,6 @@ export function DashboardShell() {
                                     />
                                 </section>
                             )}
-
-                            <section className="overflow-hidden border-b border-border-default lg:shrink-0">
-                                <FlightWidget data={flightData} loading={flightLoading} />
-                            </section>
-
                             <section className="overflow-hidden border-b border-border-default lg:shrink-0">
                                 <TimelineWidget
                                     events={dashboardEvents}
