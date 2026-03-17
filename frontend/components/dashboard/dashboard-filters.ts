@@ -3,6 +3,7 @@ import { canonicalizeCountryName } from "./country-flags";
 
 export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
 export type DashboardEventType = "strike" | "news";
+export type StrikeTimelineFilter = "iran" | "us";
 
 export interface DashboardFilters {
     dateRange: DashboardDateRange;
@@ -88,6 +89,16 @@ function parseStrikeDateToDayIso(dateString?: string | null, fallbackString?: st
 export function canonicalizeStrikeSide(side?: string | null) {
     if (!side) return undefined;
     return SIDE_ALIASES[side.trim().toLowerCase()];
+}
+
+export function matchesStrikeTimelineFilter(side: string | null | undefined, filters: StrikeTimelineFilter[]) {
+    if (filters.length === 0) return true;
+    const canonical = canonicalizeStrikeSide(side);
+    if (!canonical) return false;
+    return filters.some((filter) => {
+        if (filter === "iran") return canonical === "iran";
+        return canonical === "us" || canonical === "us-israel" || canonical === "israel";
+    });
 }
 
 export function getAvailableActors(events: FeedEventRecord[]) {

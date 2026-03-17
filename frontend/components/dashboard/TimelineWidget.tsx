@@ -15,7 +15,11 @@ import {
 } from "chart.js";
 import { Card } from "@/components/ui/card";
 import { buildEscalationBuckets, type EscalationBucket } from "./escalation-timeline";
-import type { DashboardDateRange, FeedEventRecord } from "./dashboard-filters";
+import {
+    matchesStrikeTimelineFilter,
+    type DashboardDateRange,
+    type FeedEventRecord,
+} from "./dashboard-filters";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Filler, Tooltip);
@@ -92,16 +96,169 @@ function buildNewsBuckets(
     return { bucketMode, buckets };
 }
 
-function buildStrikeBuckets(events: FeedEventRecord[], startDay: string | undefined, endDay: string) {
+function buildFilteredStrikeBuckets(
+    events: FeedEventRecord[],
+    startDay: string | undefined,
+    endDay: string,
+    selectedFilters: StrikeTimelineFilter[]
+) {
     return buildEscalationBuckets({
         strikes: events
-            .filter(({ event }) => event.type === "strike")
+            .filter(({ event }) => event.type === "strike" && matchesStrikeTimelineFilter(event.side, selectedFilters))
             .map(({ event }) => ({ date: event.timestamp })),
         news: [],
         startDay,
         endDay,
         bucket: "day",
     });
+}
+
+function StrikeTimelineSection({
+    buckets,
+    iranBuckets,
+    usBuckets,
+    hoveredIndex,
+    onHoverChange,
+}: {
+    buckets: EscalationBucket[];
+    iranBuckets: EscalationBucket[];
+    usBuckets: EscalationBucket[];
+    hoveredIndex: number | null;
+    onHoverChange: (index: number | null) => void;
+}) {
+    const hoveredBucket = hoveredIndex === null ? null : buckets[hoveredIndex] ?? null;
+    const hoveredIranBucket = hoveredIndex === null ? null : iranBuckets[hoveredIndex] ?? null;
+    const hoveredUsBucket = hoveredIndex === null ? null : usBuckets[hoveredIndex] ?? null;
+    const totalStrikes = buckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
+    const totalIran = iranBuckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
+    const totalUs = usBuckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
+
+    const chartData = {
+        labels: buckets.map((bucket) => formatDayLabel(bucket.day)),
+        datasets: [
+            {
+                label: "All",
+                data: buckets.map((bucket) => bucket.strikeCount),
+                borderColor: "rgba(239, 68, 68, 0.6)",
+                backgroundColor: "rgba(239, 68, 68, 0.05)",
+                fill: true,
+                borderWidth: 1.5,
+                tension: 0.12,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                pointHitRadius: 14,
+            },
+            {
+                label: "Iran",
+                data: iranBuckets.map((bucket) => bucket.strikeCount),
+                borderColor: "rgb(34, 197, 94)",
+                backgroundColor: "rgba(34, 197, 94, 0)",
+                fill: false,
+                borderWidth: 2,
+                tension: 0.12,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                pointHitRadius: 14,
+            },
+            {
+                label: "US",
+                data: usBuckets.map((bucket) => bucket.strikeCount),
+                borderColor: "rgb(59, 130, 246)",
+                backgroundColor: "rgba(59, 130, 246, 0)",
+                fill: false,
+                borderWidth: 2,
+                tension: 0.12,
+                pointRadius: 0,
+                pointHoverRadius: 3,
+                pointHitRadius: 14,
+            },
+        ],
+    };
+
+    const chartOptions: ChartOptions<"line"> = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            intersect: false,
+            mode: "index",
+        },
+        onHover: (_, activeElements) => {
+            const nextIndex = activeElements[0]?.index ?? null;
+            onHoverChange(nextIndex);
+        },
+        plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+        },
+        scales: {
+            x: {
+                border: { display: false },
+                ticks: {
+                    color: "#71717a",
+                    font: { size: 10 },
+                    minRotation: 0,
+                    maxRotation: 0,
+                    autoSkip: true,
+                    maxTicksLimit: 6,
+                },
+                grid: {
+                    display: false,
+                    drawTicks: false,
+                },
+            },
+            y: {
+                beginAtZero: true,
+                border: { display: false },
+                ticks: {
+                    color: "#71717a",
+                    font: { size: 10 },
+                    precision: 0,
+                    maxTicksLimit: 4,
+                },
+                grid: {
+                    color: "rgba(24,24,27,0.06)",
+                    drawTicks: false,
+                },
+            },
+        },
+        elements: {
+            line: {
+                capBezierPoints: true,
+            },
+        },
+    };
+
+    return (
+        <div>
+            <DashboardSectionHeader
+                title="Strikes Timeline"
+                className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
+                meta={(
+                    <>
+                        {hoveredBucket ? <span>{formatHoverLabel(hoveredBucket.day, "day")}</span> : null}
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-red-500/60" />
+                            <span>All {hoveredBucket?.strikeCount ?? totalStrikes}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-green-500" />
+                            <span>Iran {hoveredIranBucket?.strikeCount ?? totalIran}</span>
+                        </span>
+                        <span className="inline-flex items-center gap-1.5">
+                            <span className="h-2 w-2 rounded-full bg-blue-500" />
+                            <span>US {hoveredUsBucket?.strikeCount ?? totalUs}</span>
+                        </span>
+                    </>
+                )}
+            />
+
+            <div className="px-4 pb-2 pt-0.5">
+                <div style={{ height: 72 }} onMouseLeave={() => onHoverChange(null)}>
+                    <Line data={chartData} options={chartOptions} />
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function TimelineSection({
@@ -112,6 +269,7 @@ function TimelineSection({
     dateRange,
     hoveredIndex,
     onHoverChange,
+    actions,
     className,
 }: {
     title: string;
@@ -121,6 +279,7 @@ function TimelineSection({
     dateRange: DashboardDateRange;
     hoveredIndex: number | null;
     onHoverChange: (index: number | null) => void;
+    actions?: React.ReactNode;
     className?: string;
 }) {
     const hoveredBucket = hoveredIndex === null ? null : buckets[hoveredIndex] ?? null;
@@ -214,6 +373,7 @@ function TimelineSection({
                         </span>
                     </>
                 )}
+                actions={actions}
             />
 
             <div className="px-4 pb-2 pt-0.5">
@@ -263,7 +423,9 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     }
 
     const { bucketMode: newsBucketMode, buckets: newsBuckets } = buildNewsBuckets(events, dateRange, startDay, endDay);
-    const strikeBuckets = buildStrikeBuckets(events, startDay, endDay);
+    const strikeBuckets = buildFilteredStrikeBuckets(events, startDay, endDay, []);
+    const iranStrikeBuckets = buildFilteredStrikeBuckets(events, startDay, endDay, ["iran"]);
+    const usStrikeBuckets = buildFilteredStrikeBuckets(events, startDay, endDay, ["us"]);
 
     return (
         <Card className="rounded-none border-0 shadow-none">
@@ -278,12 +440,10 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
             />
 
             <div className="border-t border-border-default/70">
-                <TimelineSection
-                    title="Strikes Timeline"
-                    series="strike"
+                <StrikeTimelineSection
                     buckets={strikeBuckets}
-                    bucketMode="day"
-                    dateRange={dateRange}
+                    iranBuckets={iranStrikeBuckets}
+                    usBuckets={usStrikeBuckets}
                     hoveredIndex={hoveredStrikeIndex}
                     onHoverChange={setHoveredStrikeIndex}
                 />
