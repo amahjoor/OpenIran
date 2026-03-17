@@ -2,7 +2,7 @@ import type { DatabaseEvent } from "@/lib/supabase/types";
 import { canonicalizeCountryName } from "./country-flags";
 
 export type DashboardDateRange = "24h" | "3d" | "7d" | "30d" | "ytd" | "all" | "custom";
-export type DashboardEventType = "all" | "strike" | "news";
+export type DashboardEventType = "strike" | "news";
 
 export interface DashboardFilters {
     dateRange: DashboardDateRange;
@@ -68,6 +68,23 @@ function parseToIso(dateString?: string | null, fallbackString?: string | null) 
     return new Date().toISOString();
 }
 
+function parseStrikeDateToDayIso(dateString?: string | null, fallbackString?: string | null) {
+    if (dateString) {
+        const parsed = Date.parse(dateString);
+        if (!Number.isNaN(parsed)) {
+            const date = new Date(parsed);
+            return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())).toISOString();
+        }
+    }
+
+    if (fallbackString) {
+        const parsed = Date.parse(fallbackString);
+        if (!Number.isNaN(parsed)) return new Date(parsed).toISOString();
+    }
+
+    return new Date().toISOString();
+}
+
 export function canonicalizeStrikeSide(side?: string | null) {
     if (!side) return undefined;
     return SIDE_ALIASES[side.trim().toLowerCase()];
@@ -121,7 +138,9 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             title: title.slice(0, 1000),
             source: typeof strike.source === "string" ? strike.source : "Unknown",
             url: typeof strike.url === "string" ? strike.url : "",
-            timestamp: parseToIso(
+            // Strike records are day-granular in the upstream feed. Normalize
+            // them to the UTC start of day so the UI does not invent times.
+            timestamp: parseStrikeDateToDayIso(
                 typeof strike.date === "string" ? strike.date : undefined,
                 typeof strike.scannedAt === "string" ? strike.scannedAt : undefined
             ),
@@ -298,7 +317,7 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
         if (Number.isNaN(timestamp)) return false;
         if (startMs !== null && timestamp < startMs) return false;
         if (timestamp > endMs) return false;
-        if (filters.eventType !== "all" && event.type !== filters.eventType) return false;
+        if (event.type !== filters.eventType) return false;
         if (selectedSources.size > 0 && !selectedSources.has(event.source)) return false;
         if (selectedCountries.size > 0 && (!normalizedCountry || !selectedCountries.has(normalizedCountry))) return false;
         if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
@@ -307,5 +326,27 @@ export function filterDashboardEvents(events: FeedEventRecord[], filters: Dashbo
 }
 
 export function filterDashboardContextEvents(events: FeedEventRecord[], filters: DashboardFilters, now = new Date()) {
-    return filterDashboardEvents(events, { ...filters, eventType: "all", sources: [] }, now);
+    const { startMs, endMs } = getDashboardDateWindow(filters, now);
+    const selectedCountries = new Set(
+        filters.countries
+            .map((country) => canonicalizeCountryName(country))
+            .filter((country): country is string => Boolean(country))
+    );
+    const selectedActors = new Set(
+        filters.actors
+            .map((actor) => canonicalizeStrikeSide(actor))
+            .filter((actor): actor is CanonicalStrikeSide => actor !== undefined)
+    );
+
+    return events.filter(({ event }) => {
+        const timestamp = Date.parse(event.timestamp);
+        const normalizedCountry = canonicalizeCountryName(event.country);
+        const normalizedSide = canonicalizeStrikeSide(event.side);
+        if (Number.isNaN(timestamp)) return false;
+        if (startMs !== null && timestamp < startMs) return false;
+        if (timestamp > endMs) return false;
+        if (selectedCountries.size > 0 && (!normalizedCountry || !selectedCountries.has(normalizedCountry))) return false;
+        if (selectedActors.size > 0 && (!normalizedSide || !selectedActors.has(normalizedSide))) return false;
+        return true;
+    });
 }

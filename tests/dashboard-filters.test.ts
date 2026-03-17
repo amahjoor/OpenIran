@@ -51,12 +51,13 @@ test("buildFeedEvents normalizes strike and news records", () => {
   assert.equal(events[0]?.event.country, "Israel");
   assert.equal(events[1]?.event.type, "strike");
   assert.equal(events[1]?.event.side, "iran");
+  assert.equal(events[1]?.event.timestamp, "2026-03-14T00:00:00.000Z");
 });
 
 test("getDashboardDateBounds returns custom and preset bounds", () => {
   assert.deepEqual(
     getDashboardDateBounds(
-      { dateRange: "24h", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "24h", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       new Date("2026-03-14T18:00:00Z"),
     ),
     { startDay: "2026-03-13", endDay: "2026-03-14" },
@@ -64,7 +65,7 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
 
   assert.deepEqual(
     getDashboardDateBounds(
-      { dateRange: "3d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "3d", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       new Date("2026-03-14T18:00:00Z"),
     ),
     { startDay: "2026-03-12", endDay: "2026-03-14" },
@@ -72,7 +73,7 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
 
   assert.deepEqual(
     getDashboardDateBounds(
-      { dateRange: "7d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "7d", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       new Date("2026-03-14T18:00:00Z"),
     ),
     { startDay: "2026-03-08", endDay: "2026-03-14" },
@@ -80,7 +81,7 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
 
   assert.deepEqual(
     getDashboardDateBounds(
-      { dateRange: "30d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "30d", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       new Date("2026-03-14T18:00:00Z"),
     ),
     { startDay: "2026-02-13", endDay: "2026-03-14" },
@@ -88,7 +89,7 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
 
   assert.deepEqual(
     getDashboardDateBounds(
-      { dateRange: "custom", customStart: "2026-03-01", customEnd: "2026-03-10", eventType: "all", countries: [], actors: [] },
+      { dateRange: "custom", customStart: "2026-03-01", customEnd: "2026-03-10", eventType: "news", countries: [], actors: [] },
       new Date("2026-03-14T18:00:00Z"),
     ),
     { startDay: "2026-03-01", endDay: "2026-03-10" },
@@ -97,7 +98,7 @@ test("getDashboardDateBounds returns custom and preset bounds", () => {
 
 test("getDashboardDateWindow keeps rolling windows real-time for downstream queries", () => {
   const window = getDashboardDateWindow(
-    { dateRange: "24h", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+    { dateRange: "24h", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
     new Date("2026-03-14T18:00:00Z"),
     "now-if-today",
   );
@@ -108,7 +109,7 @@ test("getDashboardDateWindow keeps rolling windows real-time for downstream quer
 
 test("getDashboardDateWindow clamps same-day presets to now when requested", () => {
   const window = getDashboardDateWindow(
-    { dateRange: "30d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+    { dateRange: "30d", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
     new Date("2026-03-14T18:00:00Z"),
     "now-if-today",
   );
@@ -228,7 +229,7 @@ test("filterDashboardEvents applies selected sources", () => {
       dateRange: "ytd",
       customStart: "",
       customEnd: "",
-      eventType: "all",
+      eventType: "news",
       sources: ["Source A", "Source C"],
       countries: [],
       actors: [],
@@ -236,26 +237,26 @@ test("filterDashboardEvents applies selected sources", () => {
     new Date("2026-03-14T18:00:00Z"),
   );
 
-  assert.deepEqual(filtered.map((entry) => entry.event.title), ["Strike A", "News B", "News C"]);
+  assert.deepEqual(filtered.map((entry) => entry.event.title), ["News B", "News C"]);
 });
 
 test("filterDashboardEvents applies a rolling last 24 hours window", () => {
   const events = buildFeedEvents(
+    [],
     [
       {
-        title: "Recent strike",
+        title: "Recent news",
         source: "Source A",
         date: "2026-03-14T15:30:00Z",
         country: "Iran",
       },
       {
-        title: "Older strike",
+        title: "Older news",
         source: "Source A",
         date: "2026-03-13T16:59:59Z",
         country: "Iran",
       },
     ],
-    [],
   );
 
   const filtered = filterDashboardEvents(
@@ -264,17 +265,17 @@ test("filterDashboardEvents applies a rolling last 24 hours window", () => {
       dateRange: "24h",
       customStart: "",
       customEnd: "",
-      eventType: "all",
+      eventType: "news",
       countries: [],
       actors: [],
     },
     new Date("2026-03-14T17:00:00Z"),
   );
 
-  assert.deepEqual(filtered.map((entry) => entry.event.title), ["Recent strike"]);
+  assert.deepEqual(filtered.map((entry) => entry.event.title), ["Recent news"]);
   assert.equal(
     describeDashboardDateRange(
-      { dateRange: "24h", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "24h", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       { startDay: "2026-03-13", endDay: "2026-03-14" },
     ),
     "Last 24 hours",
@@ -283,6 +284,7 @@ test("filterDashboardEvents applies a rolling last 24 hours window", () => {
 
 test("filterDashboardEvents applies a rolling last 3 days window", () => {
   const events = buildFeedEvents(
+    [],
     [
       {
         title: "Inside window",
@@ -297,7 +299,6 @@ test("filterDashboardEvents applies a rolling last 3 days window", () => {
         country: "Iran",
       },
     ],
-    [],
   );
 
   const filtered = filterDashboardEvents(
@@ -306,7 +307,7 @@ test("filterDashboardEvents applies a rolling last 3 days window", () => {
       dateRange: "3d",
       customStart: "",
       customEnd: "",
-      eventType: "all",
+      eventType: "news",
       countries: [],
       actors: [],
     },
@@ -316,7 +317,7 @@ test("filterDashboardEvents applies a rolling last 3 days window", () => {
   assert.deepEqual(filtered.map((entry) => entry.event.title), ["Inside window"]);
   assert.equal(
     describeDashboardDateRange(
-      { dateRange: "3d", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "3d", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       { startDay: "2026-03-12", endDay: "2026-03-14" },
     ),
     "Last 3 days",
@@ -339,7 +340,7 @@ test("getAvailableCountries returns unique sorted country values", () => {
   assert.deepEqual(getAvailableCountries(events), ["Azerbaijan", "Iran", "Israel"]);
   assert.equal(
     describeDashboardDateRange(
-      { dateRange: "ytd", customStart: "", customEnd: "", eventType: "all", countries: [], actors: [] },
+      { dateRange: "ytd", customStart: "", customEnd: "", eventType: "news", countries: [], actors: [] },
       { startDay: "2026-01-01", endDay: "2026-03-14" },
     ),
     "Year to date",
@@ -348,10 +349,11 @@ test("getAvailableCountries returns unique sorted country values", () => {
 
 test("filterDashboardEvents supports multiple selected countries", () => {
   const events = buildFeedEvents(
-    [{ title: "Strike A", source: "Source A", date: "2026-03-14T10:00:00Z", country: "Iran" }],
+    [],
     [
       { title: "News A", source: "Source B", date: "2026-03-12T10:00:00Z", country: "Israel" },
       { title: "News B", source: "Source C", date: "2026-03-11T10:00:00Z", country: "Iraq" },
+      { title: "News C", source: "Source D", date: "2026-03-10T10:00:00Z", country: "Iran" },
     ],
   );
 
@@ -361,7 +363,7 @@ test("filterDashboardEvents supports multiple selected countries", () => {
       dateRange: "ytd",
       customStart: "",
       customEnd: "",
-      eventType: "all",
+      eventType: "news",
       countries: ["Iran", "Israel"],
       actors: [],
     },
@@ -370,7 +372,7 @@ test("filterDashboardEvents supports multiple selected countries", () => {
 
   assert.deepEqual(
     filtered.map((entry) => entry.event.country),
-    ["Iran", "Israel"],
+    ["Israel", "Iran"],
   );
 });
 
@@ -445,7 +447,7 @@ test("filterDashboardEvents applies actor filters to attributed events", () => {
       dateRange: "ytd",
       customStart: "",
       customEnd: "",
-      eventType: "all",
+      eventType: "strike",
       countries: [],
       actors: ["israel"],
     },

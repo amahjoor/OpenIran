@@ -17,9 +17,8 @@ import { DashboardSectionHeader } from "./DashboardSectionHeader";
 import { SourceFilter } from "./SourceFilter";
 const PAGE_SIZE = 50;
 const EVENT_TYPE_OPTIONS: Array<{ key: DashboardEventType; label: string }> = [
-    { key: "all", label: "All" },
-    { key: "strike", label: "Strikes" },
     { key: "news", label: "News" },
+    { key: "strike", label: "Strikes" },
 ];
 const SORT_OPTIONS: Array<{ key: FeedSortOrder; label: string }> = [
     { key: "newest", label: "Newest" },
@@ -34,10 +33,28 @@ function formatSourceDate(dateString?: string) {
     if (!dateString) return null;
     try {
         const parsed = new Date(dateString);
-        return Number.isNaN(parsed.getTime()) ? null : format(parsed, "PPpp");
+        if (Number.isNaN(parsed.getTime())) return null;
+        return dateString.includes("T") ? format(parsed, "PPpp") : format(parsed, "PP");
     } catch {
         return null;
     }
+}
+
+function formatFeedTimestamp(event: DatabaseEvent) {
+    const timestamp = new Date(event.timestamp);
+    if (Number.isNaN(timestamp.getTime())) return { label: "Unknown date", title: null as string | null };
+
+    if (event.type === "strike") {
+        return {
+            label: format(timestamp, "MMM d, yyyy"),
+            title: format(timestamp, "PP"),
+        };
+    }
+
+    return {
+        label: formatDistanceToNow(timestamp, { addSuffix: true }),
+        title: format(timestamp, "PPpp"),
+    };
 }
 
 function EventCard({
@@ -47,20 +64,15 @@ function EventCard({
     highlighted,
 }: {
     event: DatabaseEvent;
-    raw: Record<string, any>;
+    raw: Record<string, unknown>;
     globalTranslate: boolean;
     highlighted: boolean;
 }) {
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
-
-    const timestamp = (() => {
-        try { return new Date(event.timestamp); } catch { return new Date(); }
-    })();
-
-    const cleanSummary = (event as any).summary ? stripHtml(String((event as any).summary)) : null;
-
-    const isTranslatable = (event as any).lang && (event as any).lang !== "en" && (event as any).lang !== "unknown";
+    const timestampDisplay = formatFeedTimestamp(event);
+    const cleanSummary = event.summary ? stripHtml(String(event.summary)) : null;
+    const isTranslatable = Boolean(event.lang && event.lang !== "en" && event.lang !== "unknown");
     const [isTranslating, setIsTranslating] = React.useState(false);
     const [translatedTitle, setTranslatedTitle] = React.useState<string | null>(null);
     const [translatedSummary, setTranslatedSummary] = React.useState<string | null>(null);
@@ -130,8 +142,8 @@ function EventCard({
                         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                             <span className="truncate text-sm font-semibold text-primary">{displaySource}</span>
                             <span className="text-sm text-muted">·</span>
-                            <span className="text-sm text-muted" title={format(timestamp, "PPpp")}>
-                                {formatDistanceToNow(timestamp, { addSuffix: true })}
+                            <span className="text-sm text-muted" title={timestampDisplay.title ?? undefined}>
+                                {timestampDisplay.label}
                             </span>
                             {event.side && (
                                 <Badge variant={event.side === "us" ? "destructive" : "default"} className="uppercase tracking-wider text-[10px]">
@@ -154,11 +166,11 @@ function EventCard({
 
                     {/* Compact metadata — only show location for strikes, nothing noisy for collapsed news */}
                     <div className="flex flex-wrap gap-2 text-xs text-muted">
-                        {(event as any).location && (
-                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{(event as any).location}</span>
+                        {event.location && (
+                            <span className="flex items-center gap-1"><MapPin className="h-3 w-3" />{event.location}</span>
                         )}
-                        {(event as any).country && (event as any).country !== (event as any).location && (
-                            <span>{(event as any).country}</span>
+                        {event.country && event.country !== event.location && (
+                            <span>{event.country}</span>
                         )}
                     </div>
 

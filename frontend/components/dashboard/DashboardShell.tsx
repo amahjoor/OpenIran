@@ -60,7 +60,7 @@ export function DashboardShell() {
         dateRange: "ytd",
         customStart: "",
         customEnd: "",
-        eventType: "all",
+        eventType: "news",
         sources: [],
         countries: [],
         actors: [],
@@ -197,7 +197,7 @@ export function DashboardShell() {
                                         aircraftPositions={flightData?.aircraft_positions ?? []}
                                         airspaceLoading={flightLoading}
                                         onSelectEvent={(eventId) => {
-                                            setFilters((current) => ({ ...current, eventType: "all", sources: [] }));
+                                            setFilters((current) => ({ ...current, eventType: "strike", sources: [] }));
                                             setHighlightRequest({ eventId, requestId: Date.now() });
                                         }}
                                     />

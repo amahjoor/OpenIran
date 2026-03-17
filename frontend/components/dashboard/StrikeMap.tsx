@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { format, parseISO } from "date-fns";
 import { ChevronLeft, ChevronRight, ExternalLink, Plane, PlaneLanding } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
@@ -79,6 +80,10 @@ function formatCompactAge(timestamp: string | number) {
 
     const hours = Math.max(1, Math.round(deltaMs / 3_600_000));
     return `${hours}h`;
+}
+
+function formatStrikeDate(timestamp: string) {
+    return format(parseISO(timestamp), "MMM d");
 }
 
 export default function StrikeMap({
@@ -311,7 +316,7 @@ export default function StrikeMap({
                             <div className="min-h-0 flex-1 overflow-y-auto px-1.5">
                                 {mapEvents.map(({ event }) => {
                                     const locationLabel = event.location || event.country || "Unknown location";
-                                    const ageLabel = formatCompactAge(event.timestamp);
+                                    const dateLabel = formatStrikeDate(event.timestamp);
                                     return (
                                         <button
                                             key={`sidebar-${event.id}`}
@@ -320,23 +325,18 @@ export default function StrikeMap({
                                                 setSelectedEventId(event.id);
                                                 onSelectEvent?.(event.id);
                                             }}
-                                            className={`grid w-full grid-cols-[54px_minmax(0,1fr)_30px] items-center gap-2 rounded px-1.5 py-1 text-left transition-colors hover:bg-surface-2/55 ${
+                                            title={event.title}
+                                            className={`flex w-full items-center justify-between gap-3 rounded px-1.5 py-1 text-left transition-colors hover:bg-surface-2/55 ${
                                                 selectedEventId === event.id ? "bg-surface-2/70 text-primary" : ""
                                             }`}
                                         >
-                                            <span className="truncate text-[10px] leading-4 text-muted" title={locationLabel}>
-                                                {locationLabel}
-                                            </span>
                                             <div className="flex min-w-0 items-center gap-1.5">
                                                 <span className="inline-flex h-1.5 w-1.5 shrink-0 rounded-full bg-status-danger" />
-                                                <p
-                                                    className="min-w-0 truncate text-[11px] leading-4 text-primary"
-                                                    title={event.title}
-                                                >
-                                                    {event.title}
-                                                </p>
+                                                <span className="min-w-0 truncate text-[11px] leading-4 text-primary" title={locationLabel}>
+                                                    {locationLabel}
+                                                </span>
                                             </div>
-                                            <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">{ageLabel}</span>
+                                            <span className="shrink-0 text-right text-[10px] tabular-nums text-muted">{dateLabel}</span>
                                         </button>
                                     );
                                 })}

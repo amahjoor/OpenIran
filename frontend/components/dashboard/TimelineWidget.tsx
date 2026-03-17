@@ -13,14 +13,23 @@ import {
     PointElement,
     Tooltip,
 } from "chart.js";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-    buildEscalationBucketsFromEvents,
-} from "./escalation-timeline";
+import { Card } from "@/components/ui/card";
+import { buildEscalationBuckets, type EscalationBucket } from "./escalation-timeline";
 import type { DashboardDateRange, FeedEventRecord } from "./dashboard-filters";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 
 ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Filler, Tooltip);
+
+type TimelineBucketMode = "hour" | "day";
+type TimelineSeries = "news" | "strike";
+
+interface TimelineWidgetProps {
+    events: FeedEventRecord[];
+    dateRange: DashboardDateRange;
+    startDay?: string;
+    endDay: string;
+    loading: boolean;
+}
 
 function formatDayLabel(day: string) {
     return format(parseISO(day), "MMM d");
@@ -31,22 +40,14 @@ function formatHourLabel(hour: string, dateRange: DashboardDateRange) {
     return dateRange === "7d" ? format(parsed, "MMM d") : format(parsed, "ha");
 }
 
-function formatBucketLabel(day: string, bucket: "hour" | "day", dateRange: DashboardDateRange) {
+function formatBucketLabel(day: string, bucket: TimelineBucketMode, dateRange: DashboardDateRange) {
     if (bucket === "hour") return formatHourLabel(day, dateRange);
     return formatDayLabel(day);
 }
 
-function formatHoverLabel(day: string, bucket: "hour" | "day") {
+function formatHoverLabel(day: string, bucket: TimelineBucketMode) {
     const parsed = parseISO(day);
     return bucket === "hour" ? format(parsed, "MMM d, ha") : format(parsed, "MMM d, yyyy");
-}
-
-interface TimelineWidgetProps {
-    events: FeedEventRecord[];
-    dateRange: DashboardDateRange;
-    startDay?: string;
-    endDay: string;
-    loading: boolean;
 }
 
 function getTimelineBucketMode(dateRange: DashboardDateRange) {
@@ -57,76 +58,88 @@ function getCurrentUtcHourKey() {
     return `${new Date().toISOString().slice(0, 13)}:00:00.000Z`;
 }
 
-export function TimelineWidget({ events, dateRange, startDay, endDay, loading }: TimelineWidgetProps) {
-    const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
+function getSeriesValue(bucket: EscalationBucket, series: TimelineSeries) {
+    return series === "news" ? bucket.newsCount : bucket.strikeCount;
+}
 
-    if (loading) {
-        return (
-            <Card className="rounded-none border-0 shadow-none">
-                <DashboardSectionHeader
-                    title="Escalation Timeline"
-                    className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
-                />
-                <CardContent className="p-0">
-                    <div className="px-4 pb-2 pt-0.5">
-                        <div className="rounded-[18px] bg-surface-2/45 px-3 py-2.5">
-                            <div className="space-y-2">
-                                <div className="flex items-center gap-3">
-                                    <div className="h-3 w-14 animate-pulse rounded bg-surface-2/80" />
-                                    <div className="h-3 w-16 animate-pulse rounded bg-surface-2/60" />
-                                </div>
-                                <div className="h-[72px] animate-pulse rounded-[14px] bg-surface-2/70" />
-                            </div>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
+function buildNewsBuckets(
+    events: FeedEventRecord[],
+    dateRange: DashboardDateRange,
+    startDay: string | undefined,
+    endDay: string
+) {
     const bucketMode = getTimelineBucketMode(dateRange);
-    // Short windows benefit from hour-level detail. Longer windows stay on
-    // daily buckets to avoid collapsing the chart into unreadable noise.
+    const news = events
+        .filter(({ event }) => event.type === "news")
+        .map(({ event }) => ({ date: event.timestamp }));
+
     const buckets = bucketMode === "hour"
-        ? buildEscalationBucketsFromEvents({
-            events,
+        ? buildEscalationBuckets({
+            strikes: [],
+            news,
             days: dateRange === "7d" ? 24 * 7 : dateRange === "3d" ? 24 * 3 : 24,
             endDay: getCurrentUtcHourKey(),
             bucket: "hour",
         })
-        : buildEscalationBucketsFromEvents({
-            events,
+        : buildEscalationBuckets({
+            strikes: [],
+            news,
             startDay,
             endDay,
             bucket: "day",
         });
+
+    return { bucketMode, buckets };
+}
+
+function buildStrikeBuckets(events: FeedEventRecord[], startDay: string | undefined, endDay: string) {
+    return buildEscalationBuckets({
+        strikes: events
+            .filter(({ event }) => event.type === "strike")
+            .map(({ event }) => ({ date: event.timestamp })),
+        news: [],
+        startDay,
+        endDay,
+        bucket: "day",
+    });
+}
+
+function TimelineSection({
+    title,
+    series,
+    buckets,
+    bucketMode,
+    dateRange,
+    hoveredIndex,
+    onHoverChange,
+    className,
+}: {
+    title: string;
+    series: TimelineSeries;
+    buckets: EscalationBucket[];
+    bucketMode: TimelineBucketMode;
+    dateRange: DashboardDateRange;
+    hoveredIndex: number | null;
+    onHoverChange: (index: number | null) => void;
+    className?: string;
+}) {
     const hoveredBucket = hoveredIndex === null ? null : buckets[hoveredIndex] ?? null;
-    const totalNews = buckets.reduce((sum, bucket) => sum + bucket.newsCount, 0);
-    const totalStrikes = buckets.reduce((sum, bucket) => sum + bucket.strikeCount, 0);
+    const total = buckets.reduce((sum, bucket) => sum + getSeriesValue(bucket, series), 0);
+    const color = series === "news" ? "rgb(99, 102, 241)" : "rgb(239, 68, 68)";
+    const fill = series === "news" ? "rgba(99, 102, 241, 0.14)" : "rgba(239, 68, 68, 0.10)";
+    const label = series === "news" ? "News" : "Strikes";
 
     const chartData = {
         labels: buckets.map((bucket) => formatBucketLabel(bucket.day, bucketMode, dateRange)),
         datasets: [
             {
-                label: "News",
-                data: buckets.map((bucket) => bucket.newsCount),
-                borderColor: "rgb(99, 102, 241)",
-                backgroundColor: "rgba(99, 102, 241, 0.14)",
+                label,
+                data: buckets.map((bucket) => getSeriesValue(bucket, series)),
+                borderColor: color,
+                backgroundColor: fill,
                 fill: true,
                 borderWidth: 2,
-                tension: 0.2,
-                pointRadius: 0,
-                pointHoverRadius: 3,
-                pointHitRadius: 14,
-            },
-            {
-                label: "Strikes",
-                data: buckets.map((bucket) => bucket.strikeCount),
-                borderColor: "rgb(239, 68, 68)",
-                backgroundColor: "rgba(239, 68, 68, 0.08)",
-                fill: false,
-                borderWidth: 2,
-                tension: 0.18,
+                tension: series === "news" ? 0.2 : 0.12,
                 pointRadius: 0,
                 pointHoverRadius: 3,
                 pointHitRadius: 14,
@@ -143,13 +156,11 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
         },
         onHover: (_, activeElements) => {
             const nextIndex = activeElements[0]?.index ?? null;
-            setHoveredIndex((current) => (current === nextIndex ? current : nextIndex));
+            onHoverChange(nextIndex);
         },
         plugins: {
             legend: { display: false },
-            tooltip: {
-                enabled: false,
-            },
+            tooltip: { enabled: false },
         },
         scales: {
             x: {
@@ -190,35 +201,93 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
     };
 
     return (
-        <Card className="rounded-none border-0 shadow-none">
+        <div className={className}>
             <DashboardSectionHeader
-                title="Escalation Timeline"
+                title={title}
                 className="min-h-0 px-4 pb-0.5 pt-2 sm:px-5"
                 meta={(
                     <>
                         {hoveredBucket ? <span>{formatHoverLabel(hoveredBucket.day, bucketMode)}</span> : null}
                         <span className="inline-flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-indigo-500" />
-                            <span>News {hoveredBucket?.newsCount ?? totalNews}</span>
+                            <span className={`h-2 w-2 rounded-full ${series === "news" ? "bg-indigo-500" : "bg-red-500"}`} />
+                            <span>{label} {hoveredBucket ? getSeriesValue(hoveredBucket, series) : total}</span>
                         </span>
-                        <span className="inline-flex items-center gap-1.5">
-                            <span className="h-2 w-2 rounded-full bg-red-500" />
-                            <span>Strikes {hoveredBucket?.strikeCount ?? totalStrikes}</span>
-                        </span>
-                        {hoveredBucket ? <span>Total {hoveredBucket.totalCount}</span> : null}
                     </>
                 )}
             />
 
-            <CardContent className="p-0">
-                <div className="px-4 pb-2 pt-0.5">
-                    <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
-                        <div style={{ height: 72 }} onMouseLeave={() => setHoveredIndex(null)}>
-                            <Line data={chartData} options={chartOptions} />
+            <div className="px-4 pb-2 pt-0.5">
+                <div style={{ height: 72 }} onMouseLeave={() => onHoverChange(null)}>
+                    <Line data={chartData} options={chartOptions} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function TimelineLoadingSection({ title, className }: { title: string; className?: string }) {
+    return (
+        <div className={className}>
+            <DashboardSectionHeader
+                title={title}
+                className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
+            />
+            <div className="px-4 pb-2 pt-0.5">
+                <div className="rounded-[18px] bg-surface-2/45 px-3 py-2.5">
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                            <div className="h-3 w-16 animate-pulse rounded bg-surface-2/80" />
+                            <div className="h-3 w-14 animate-pulse rounded bg-surface-2/60" />
                         </div>
+                        <div className="h-[72px] animate-pulse rounded-[14px] bg-surface-2/70" />
                     </div>
                 </div>
-            </CardContent>
+            </div>
+        </div>
+    );
+}
+
+export function TimelineWidget({ events, dateRange, startDay, endDay, loading }: TimelineWidgetProps) {
+    const [hoveredNewsIndex, setHoveredNewsIndex] = React.useState<number | null>(null);
+    const [hoveredStrikeIndex, setHoveredStrikeIndex] = React.useState<number | null>(null);
+
+    if (loading) {
+        return (
+            <Card className="rounded-none border-0 shadow-none">
+                <TimelineLoadingSection title="News Timeline" />
+                <div className="border-t border-border-default/70">
+                    <TimelineLoadingSection title="Strikes Timeline" />
+                </div>
+            </Card>
+        );
+    }
+
+    const { bucketMode: newsBucketMode, buckets: newsBuckets } = buildNewsBuckets(events, dateRange, startDay, endDay);
+    const strikeBuckets = buildStrikeBuckets(events, startDay, endDay);
+
+    return (
+        <Card className="rounded-none border-0 shadow-none">
+            <TimelineSection
+                title="News Timeline"
+                series="news"
+                buckets={newsBuckets}
+                bucketMode={newsBucketMode}
+                dateRange={dateRange}
+                hoveredIndex={hoveredNewsIndex}
+                onHoverChange={setHoveredNewsIndex}
+            />
+
+            <div className="border-t border-border-default/70">
+                <TimelineSection
+                    title="Strikes Timeline"
+                    series="strike"
+                    buckets={strikeBuckets}
+                    bucketMode="day"
+                    dateRange={dateRange}
+                    hoveredIndex={hoveredStrikeIndex}
+                    onHoverChange={setHoveredStrikeIndex}
+                />
+            </div>
         </Card>
     );
 }

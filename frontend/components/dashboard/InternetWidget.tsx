@@ -74,7 +74,7 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
                         dateRange,
                         customStart,
                         customEnd,
-                        eventType: "all",
+                        eventType: "news",
                         countries: [],
                         actors: [],
                     },
@@ -243,10 +243,8 @@ export function InternetWidget({ dateRange, customStart, customEnd }: InternetWi
             <CardContent className="p-0">
                 {chartLabels.length > 1 ? (
                     <div className="px-4 pb-2 pt-0.5">
-                        <div className="rounded-[18px] bg-surface-2/45 px-2 py-1.5">
-                            <div style={{ height: 72 }} onMouseLeave={() => setHoveredIndex(null)}>
-                                <Line data={chartData} options={chartOptions} />
-                            </div>
+                        <div style={{ height: 72 }} onMouseLeave={() => setHoveredIndex(null)}>
+                            <Line data={chartData} options={chartOptions} />
                         </div>
                     </div>
                 ) : (
