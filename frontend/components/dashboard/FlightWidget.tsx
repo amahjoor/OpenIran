@@ -18,7 +18,18 @@ export function FlightWidget({ data, loading }: FlightWidgetProps) {
         return (
             <Card className="rounded-none border-0 bg-transparent shadow-none">
                 <CardContent className="p-0">
-                    <div className="mx-4 my-3 h-[7rem] animate-pulse rounded-[18px] bg-surface-2/70" />
+                    <div className="px-4 py-2.5">
+                        <div className="grid gap-3 sm:grid-cols-2 sm:gap-0 sm:divide-x sm:divide-border-default">
+                            <div className="space-y-2 sm:pr-4">
+                                <div className="h-4 w-11/12 animate-pulse rounded bg-surface-2/80" />
+                                <div className="h-3 w-2/3 animate-pulse rounded bg-surface-2/60" />
+                            </div>
+                            <div className="space-y-2 sm:pl-4">
+                                <div className="h-4 w-full animate-pulse rounded bg-surface-2/80" />
+                                <div className="h-4 w-5/6 animate-pulse rounded bg-surface-2/60" />
+                            </div>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         );

@@ -381,12 +381,20 @@ export function Feed({
         return (
             <div className="border-x border-b border-border-default bg-surface-1 lg:flex lg:h-full lg:flex-col lg:border-0 lg:bg-transparent">
                 {header}
-                <div className="border-b border-border-default px-4 py-4 sm:px-5">
-                    <div className="h-6 w-32 animate-pulse rounded bg-surface-2" />
-                </div>
                 {[1, 2, 3].map((i) => (
                     <div key={i} className="border-b border-border-default px-4 py-4 last:border-b-0 sm:px-5">
-                        <div className="h-24 animate-pulse rounded-2xl bg-surface-2" />
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                                <div className="h-7 w-7 animate-pulse rounded-full bg-surface-2/80" />
+                                <div className="h-3 w-28 animate-pulse rounded bg-surface-2/80" />
+                                <div className="h-3 w-24 animate-pulse rounded bg-surface-2/60" />
+                            </div>
+                            <div className="space-y-2">
+                                <div className="h-4 w-11/12 animate-pulse rounded bg-surface-2/80" />
+                                <div className="h-4 w-3/4 animate-pulse rounded bg-surface-2/60" />
+                            </div>
+                            <div className="h-3 w-1/3 animate-pulse rounded bg-surface-2/60" />
+                        </div>
                     </div>
                 ))}
             </div>

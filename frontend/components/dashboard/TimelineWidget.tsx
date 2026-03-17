@@ -68,7 +68,17 @@ export function TimelineWidget({ events, dateRange, startDay, endDay, loading }:
                     className="min-h-0 px-4 pb-1 pt-2 sm:px-5"
                 />
                 <CardContent className="p-0">
-                    <div className="mx-4 mb-2 h-[5.5rem] animate-pulse rounded-[18px] bg-surface-2/70" />
+                    <div className="px-4 pb-2 pt-0.5">
+                        <div className="rounded-[18px] bg-surface-2/45 px-3 py-2.5">
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-3 w-14 animate-pulse rounded bg-surface-2/80" />
+                                    <div className="h-3 w-16 animate-pulse rounded bg-surface-2/60" />
+                                </div>
+                                <div className="h-[72px] animate-pulse rounded-[14px] bg-surface-2/70" />
+                            </div>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
         );
