@@ -19,6 +19,7 @@ import {
     matchesStrikeTimelineFilter,
     type DashboardDateRange,
     type FeedEventRecord,
+    type StrikeTimelineFilter,
 } from "./dashboard-filters";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 

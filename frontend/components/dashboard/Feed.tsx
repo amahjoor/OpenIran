@@ -41,6 +41,23 @@ function formatSourceDate(dateString?: string) {
     }
 }
 
+function getOptionalString(value: unknown) {
+    return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function formatCoordinates(lat: unknown, lng: unknown) {
+    return typeof lat === "number" && typeof lng === "number"
+        ? `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+        : null;
+}
+
+function formatUserReportLabel(raw: Record<string, unknown>) {
+    if (raw.userReport !== true) return null;
+
+    const reportCount = typeof raw.reportCount === "number" ? raw.reportCount : 1;
+    return `Yes (${reportCount} report${reportCount !== 1 ? "s" : ""})`;
+}
+
 function formatFeedTimestamp(event: DatabaseEvent) {
     const timestamp = new Date(event.timestamp);
     if (Number.isNaN(timestamp.getTime())) return { label: "Unknown date", title: null as string | null };
@@ -136,6 +153,29 @@ function EventCard({
     const displayTitle = globalTranslate && translatedTitle ? translatedTitle : event.title;
     const displaySummary = globalTranslate && translatedSummary ? translatedSummary : cleanSummary;
     const displaySource = globalTranslate && translatedSource ? translatedSource : event.source;
+    const tags = Array.isArray(raw.tags) ? raw.tags.filter((tag): tag is string => typeof tag === "string") : [];
+    const mapCoordinates = typeof raw.lat === "number" && typeof raw.lng === "number"
+        ? { lat: raw.lat, lng: raw.lng }
+        : null;
+    const sourceUrl = getOptionalString(raw.url);
+    const detailRows: Array<{ label: string; value: string }> = [
+        { label: "Published", value: formatSourceDate(getOptionalString(raw.date) ?? undefined) },
+        { label: "Ingested at", value: formatSourceDate(getOptionalString(raw.scannedAt) ?? undefined) },
+        { label: "Source", value: getOptionalString(raw.source) },
+        { label: "Language", value: getOptionalString(raw.lang) },
+        { label: "Attribution", value: getOptionalString(raw.side) },
+        { label: "Country", value: getOptionalString(raw.country) },
+        { label: "Location", value: getOptionalString(raw.locationName) },
+        { label: "Coordinates", value: formatCoordinates(raw.lat, raw.lng) },
+        { label: "User-reported", value: formatUserReportLabel(raw) },
+        { label: "Feed URL", value: getOptionalString(raw.feedUrl) },
+    ].flatMap((entry) => entry.value === null ? [] : [{ label: entry.label, value: entry.value }]);
+    const detailRowNodes: React.JSX.Element[] = detailRows.map(({ label, value }) => (
+        <div key={label}>
+            <p className="text-xs text-muted">{label}</p>
+            <p className="text-secondary truncate" title={value}>{value}</p>
+        </div>
+    ));
 
     return (
         <article
@@ -212,31 +252,15 @@ function EventCard({
 
                             {/* Field grid */}
                             <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                                {[
-                                    ["Published", formatSourceDate(raw.date)],
-                                    ["Ingested at", formatSourceDate(raw.scannedAt)],
-                                    ["Source", raw.source || null],
-                                    ["Language", raw.lang || null],
-                                    ["Attribution", raw.side || null],
-                                    ["Country", raw.country || null],
-                                    ["Location", raw.locationName || null],
-                                    ["Coordinates", raw.lat && raw.lng ? `${Number(raw.lat).toFixed(4)}, ${Number(raw.lng).toFixed(4)}` : null],
-                                    ["User-reported", raw.userReport ? `Yes (${raw.reportCount ?? 1} report${raw.reportCount !== 1 ? "s" : ""})` : null],
-                                    ["Feed URL", raw.feedUrl || null],
-                                ].filter(([, v]) => v != null).map(([label, value]) => (
-                                    <div key={label as string}>
-                                        <p className="text-xs text-muted">{label}</p>
-                                        <p className="text-secondary truncate" title={value as string}>{value}</p>
-                                    </div>
-                                ))}
+                                {detailRowNodes}
                             </div>
 
                             {/* Tags */}
-                            {Array.isArray(raw.tags) && raw.tags.length > 0 && (
+                            {tags.length > 0 && (
                                 <div>
                                     <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">Tags</p>
                                     <div className="flex flex-wrap gap-1">
-                                        {raw.tags.map((t: string) => (
+                                        {tags.map((t) => (
                                             <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
                                         ))}
                                     </div>
@@ -244,25 +268,25 @@ function EventCard({
                             )}
 
                             {/* Map link for geolocated strikes */}
-                            {raw.lat && raw.lng && (
+                            {mapCoordinates && (
                                 <a
-                                    href={`https://maps.google.com/maps?q=${raw.lat},${raw.lng}&z=10`}
+                                    href={`https://maps.google.com/maps?q=${mapCoordinates.lat},${mapCoordinates.lng}&z=10`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-1 text-xs text-status-info hover:underline"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     <MapPin className="h-3 w-3" />
-                                    View on map ({Number(raw.lat).toFixed(3)}, {Number(raw.lng).toFixed(3)})
+                                    View on map ({mapCoordinates.lat.toFixed(3)}, {mapCoordinates.lng.toFixed(3)})
                                 </a>
                             )}
 
                             {/* Footer Actions */}
                             <div className="flex flex-wrap items-center gap-4 pt-2">
                                 {/* Source link */}
-                                {raw.url && (
+                                {sourceUrl && (
                                     <a
-                                        href={raw.url}
+                                        href={sourceUrl}
                                         target="_blank"
                                         rel="noreferrer noopener"
                                         className="inline-flex items-center gap-1 text-sm font-medium text-status-info hover:underline"
