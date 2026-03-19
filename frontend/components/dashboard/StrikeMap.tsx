@@ -301,9 +301,9 @@ export default function StrikeMap({
                                     )}
                                 </div>
 
-                                <div className="mt-2 border-t border-border-default px-3 pt-2 text-[11px] leading-4 text-muted">
-                                    <div className="flex items-center gap-1.5 whitespace-nowrap">
-                                        <span>Sources:</span>
+                                <div className="mt-1.5 border-t border-border-default px-2.5 pt-1.5 text-[10px] leading-4 text-muted">
+                                    <div className="flex items-center gap-1 whitespace-nowrap">
+                                        <span>Sources</span>
                                         <a
                                             href={ADSB_URL}
                                             target="_blank"
@@ -311,7 +311,7 @@ export default function StrikeMap({
                                             className="inline-flex items-center gap-1 transition-colors hover:text-primary"
                                         >
                                             ADSB Exchange
-                                            <ExternalLink className="h-3 w-3" />
+                                            <ExternalLink className="h-2.5 w-2.5" />
                                         </a>
                                         <span className="text-border-strong">/</span>
                                         <a
@@ -321,7 +321,7 @@ export default function StrikeMap({
                                             className="inline-flex items-center gap-1 transition-colors hover:text-primary"
                                         >
                                             OpenSky
-                                            <ExternalLink className="h-3 w-3" />
+                                            <ExternalLink className="h-2.5 w-2.5" />
                                         </a>
                                     </div>
                                 </div>

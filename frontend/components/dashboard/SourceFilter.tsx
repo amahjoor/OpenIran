@@ -59,14 +59,14 @@ export function SourceFilter({
             <button
                 type="button"
                 onClick={() => setOpen((current) => !current)}
-                className={`inline-flex h-7 items-center gap-1.5 rounded-md border px-2 text-[11px] font-medium transition-colors ${
+                className={`inline-flex h-7 items-center gap-1 rounded-md border px-1.5 text-[11px] font-medium transition-colors ${
                     open
                         ? "border-border-strong bg-surface-2 text-primary"
                         : "border-border-default bg-transparent text-secondary hover:border-border-strong hover:text-primary"
                 }`}
             >
                 <Search className="h-3.5 w-3.5 text-muted" />
-                <span className="max-w-[132px] truncate">{getSourceLabel(value)}</span>
+                <span className="max-w-[88px] truncate">{getSourceLabel(value)}</span>
                 <ChevronDown className={`h-3.5 w-3.5 text-muted transition-transform ${open ? "rotate-180" : ""}`} />
             </button>
 
