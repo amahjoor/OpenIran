@@ -122,7 +122,7 @@ export default function StrikeMap({
     return (
         <div className="relative z-0 flex h-full flex-col">
             <DashboardSectionHeader
-                title="Strike Map"
+                title="Map"
                 meta={<span>{mapEvents.length} geocoded strikes</span>}
                 actions={(
                     <button

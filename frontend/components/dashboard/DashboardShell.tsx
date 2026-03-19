@@ -26,7 +26,7 @@ const StrikeMap = dynamic(() => import("./StrikeMap"), {
     loading: () => (
         <div className="border-b border-border-default">
             <DashboardSectionHeader
-                title="Strike Map"
+                title="Map"
                 meta={<span className="inline-block h-3 w-24 animate-pulse rounded bg-surface-2/80" />}
                 actions={<span className="inline-block h-3 w-16 animate-pulse rounded bg-surface-2/80" />}
             />
@@ -170,7 +170,7 @@ export function DashboardShell() {
                             {loading ? (
                                 <section className="overflow-hidden border-b border-border-default lg:h-[372px] lg:shrink-0">
                                     <DashboardSectionHeader
-                                        title="Strike Map"
+                                        title="Map"
                                         meta={<span className="inline-block h-3 w-24 animate-pulse rounded bg-surface-2/80" />}
                                         actions={<span className="inline-block h-3 w-16 animate-pulse rounded bg-surface-2/80" />}
                                     />
