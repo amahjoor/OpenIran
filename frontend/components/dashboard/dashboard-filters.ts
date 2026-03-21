@@ -66,7 +66,7 @@ function parseToIso(dateString?: string | null, fallbackString?: string | null) 
         if (!Number.isNaN(parsed)) return new Date(parsed).toISOString();
     }
 
-    return new Date().toISOString();
+    return null;
 }
 
 function parseStrikeDateToDayIso(dateString?: string | null, fallbackString?: string | null) {
@@ -174,6 +174,7 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
     news.forEach((item, index) => {
         const title = typeof item.title === "string" ? item.title : "";
         if (!title) return;
+        const timestamp = parseToIso(typeof item.date === "string" ? item.date : undefined);
 
         const event: DatabaseEvent = {
             id: `news-${index}-${String(item.url ?? item.date ?? index)}`,
@@ -181,7 +182,7 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             title: title.slice(0, 1000),
             source: typeof item.source === "string" ? item.source : "Unknown",
             url: typeof item.url === "string" ? item.url : "",
-            timestamp: parseToIso(typeof item.date === "string" ? item.date : undefined),
+            timestamp: timestamp ?? new Date(0).toISOString(),
             created_at: new Date().toISOString(),
             summary: typeof item.description === "string" ? item.description : null,
             country: canonicalizeCountryName(typeof item.country === "string" ? item.country : null),
@@ -195,7 +196,13 @@ export function buildFeedEvents(strikes: Array<Record<string, unknown>>, news: A
             severity: "info",
         } as DatabaseEvent;
 
-        combined.push({ event, raw: item });
+        combined.push({
+            event,
+            raw: {
+                ...item,
+                missingTimestamp: timestamp === null,
+            },
+        });
     });
 
     combined.sort((left, right) => new Date(right.event.timestamp).getTime() - new Date(left.event.timestamp).getTime());

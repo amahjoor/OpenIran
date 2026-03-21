@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import { ExternalLink, Flame, Info, ChevronDown, ChevronUp, Languages, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { JsonViewer } from "@/components/ui/JsonViewer";
@@ -13,6 +13,8 @@ import {
     getFeedEventElementId,
     sortFeedEvents,
 } from "./feed-navigation";
+import { formatLanguageLabel } from "./language-labels";
+import { formatFeedTimestampFromRaw } from "./feed-timestamp";
 import { DashboardSectionHeader } from "./DashboardSectionHeader";
 import { SourceFilter } from "./SourceFilter";
 
@@ -58,23 +60,6 @@ function formatUserReportLabel(raw: Record<string, unknown>) {
     return `Yes (${reportCount} report${reportCount !== 1 ? "s" : ""})`;
 }
 
-function formatFeedTimestamp(event: DatabaseEvent) {
-    const timestamp = new Date(event.timestamp);
-    if (Number.isNaN(timestamp.getTime())) return { label: "Unknown date", title: null as string | null };
-
-    if (event.type === "strike") {
-        return {
-            label: format(timestamp, "MMM d, yyyy"),
-            title: format(timestamp, "PP"),
-        };
-    }
-
-    return {
-        label: formatDistanceToNow(timestamp, { addSuffix: true }),
-        title: format(timestamp, "PPpp"),
-    };
-}
-
 function getStrikeSideFlagCode(side?: string | null) {
     if (!side) return null;
 
@@ -108,7 +93,7 @@ function EventCard({
 }) {
     const [expanded, setExpanded] = React.useState(false);
     const isStrike = event.type === "strike";
-    const timestampDisplay = formatFeedTimestamp(event);
+    const timestampDisplay = formatFeedTimestampFromRaw(event, raw);
     const strikeSideFlagCode = isStrike ? getStrikeSideFlagCode(event.side) : null;
     const cleanSummary = event.summary ? stripHtml(String(event.summary)) : null;
     const isTranslatable = Boolean(event.lang && event.lang !== "en" && event.lang !== "unknown");
@@ -162,7 +147,7 @@ function EventCard({
         { label: "Published", value: formatSourceDate(getOptionalString(raw.date) ?? undefined) },
         { label: "Ingested at", value: formatSourceDate(getOptionalString(raw.scannedAt) ?? undefined) },
         { label: "Source", value: getOptionalString(raw.source) },
-        { label: "Language", value: getOptionalString(raw.lang) },
+        { label: "Language", value: formatLanguageLabel(raw.lang) },
         { label: "Attribution", value: getOptionalString(raw.side) },
         { label: "Country", value: getOptionalString(raw.country) },
         { label: "Location", value: getOptionalString(raw.locationName) },
