@@ -75,7 +75,9 @@ function buildNewsBuckets(
 ) {
     const bucketMode = getTimelineBucketMode(dateRange);
     const news = events
-        .filter(({ event }) => event.type === "news")
+        // Undated news items use a sentinel timestamp for feed ordering.
+        // Keep them out of the timeline so the chart reflects only real dates.
+        .filter(({ event, raw }) => event.type === "news" && raw.missingTimestamp !== true)
         .map(({ event }) => ({ date: event.timestamp }));
 
     const buckets = bucketMode === "hour"
@@ -90,6 +92,7 @@ function buildNewsBuckets(
             strikes: [],
             news,
             startDay,
+            startFromYearOfEarliest: dateRange === "all" && !startDay,
             endDay,
             bucket: "day",
         });

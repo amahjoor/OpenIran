@@ -50,6 +50,11 @@ function getUtcYearStartDay(now: Date) {
     return toUtcDayKey(new Date(Date.UTC(now.getUTCFullYear(), 0, 1)));
 }
 
+function getUtcYearStartBucket(key: string, bucket: "hour" | "day") {
+    if (bucket === "hour") return `${key.slice(0, 4)}-01-01T00:00:00.000Z`;
+    return `${key.slice(0, 4)}-01-01`;
+}
+
 function getUtcMonthStartDay(day: string) {
     return `${day.slice(0, 7)}-01`;
 }
@@ -81,6 +86,7 @@ export function buildEscalationBuckets({
     news,
     days,
     startDay,
+    startFromYearOfEarliest = false,
     endDay,
     bucket,
     now = new Date(),
@@ -89,6 +95,7 @@ export function buildEscalationBuckets({
     news: TimelineInputItem[];
     days?: number;
     startDay?: string;
+    startFromYearOfEarliest?: boolean;
     endDay?: string;
     bucket?: "hour" | "day";
     now?: Date;
@@ -113,6 +120,8 @@ export function buildEscalationBuckets({
         ? shiftUtcBucket(endKey, -(days - 1), baseBucket)
         : startDay
             ? startDay
+        : startFromYearOfEarliest && datedKeys[0]
+            ? getUtcYearStartBucket(datedKeys[0], baseBucket)
         : datedKeys[0] ?? endKey;
 
     const buckets = new Map<string, EscalationBucket>();

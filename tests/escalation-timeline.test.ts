@@ -108,6 +108,24 @@ test("buildEscalationBuckets spans from the earliest event when days is omitted"
   ]);
 });
 
+test("buildEscalationBuckets can snap all-time views to the start of the earliest year", () => {
+  const buckets = buildEscalationBuckets({
+    strikes: [],
+    news: [
+      { date: "2026-03-12T18:00:00Z" },
+    ],
+    startFromYearOfEarliest: true,
+    endDay: "2026-03-14",
+  });
+
+  assert.equal(buckets[0]?.day, "2026-01-01");
+  assert.equal(buckets.at(-1)?.day, "2026-03-14");
+  assert.equal(
+    buckets.find((bucket) => bucket.day === "2026-03-12")?.newsCount,
+    1
+  );
+});
+
 test("getEscalationRangeConfig maps the supported timeline presets", () => {
   assert.deepEqual(getEscalationRangeConfig("24h", new Date("2026-03-14T18:00:00Z")), {
     days: 24,
