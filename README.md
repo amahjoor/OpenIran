@@ -1,10 +1,21 @@
-# OpenIran
+# Track Iran flights, outages, strikes, and news
 
-## About
-OpenIran consolidates information about what's happening related to Iran and the escalating war there. Information about the war is often fragmented, internet is frequently blacked out inside the country, and news coverage is often biased or unclear. 
+OpenIran is a live dashboard for the Iran conflict: flights, internet outages, strike trends, and news, in one page. The public site is [open-iran.vercel.app](https://open-iran.vercel.app).
 
-There are tell-tale signals that can give us insight into what's happening inside the country and in terms of the war. We capture 1) aviation data to see airplanes flying into the airport or over the country, 2) internet outages, 3) trends in strikes, and 4) news coverage. 
+Coverage is fragmented, connections inside the country are often cut, and reports disagree. The page pulls those four signals into one view so a person with family there can see them together.
 
-My name is Arman, and I am building and maintaining OpenIran because I have family in Iran and wanted to build a central source of truth to keep up with what's happening there. This project is open source and anyone can use or build upon it. All contributions are welcomed. I hope this tool is useful!
+The app is a Next.js frontend on Supabase. Local defaults are `NEXT_PUBLIC_SUPABASE_URL` (`http://127.0.0.1:54321` if unset) and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
--Arman
+## Run the site locally
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open http://localhost:3000. Sync jobs for flights, internet, and events are in `supabase/functions/`.
+
+## License
+
+[MIT](LICENSE.md)
